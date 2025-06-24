@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+body {
+  background-color: black;
+}
+
+@keyframes glitch-animation {
+  0% {
+    opacity: 1;
+    transform: translateZ(0);
+    clip-path: polygon(0 2%, 100% 2%, 100% 98%, 0 98%);
+  }
+  2% {
+    clip-path: polygon(0 78%, 100% 78%, 100% 100%, 0 100%);
+    transform: translate(-5px, 0);
+  }
+  6% {
+    clip-path: polygon(0 2%, 100% 2%, 100% 9%, 0 9%);
+    transform: translate(5px, 0);
+  }
+  8% {
+    clip-path: polygon(0 50%, 100% 50%, 100% 55%, 0 55%);
+    transform: translate(5px, 0);
+  }
+  9% {
+    clip-path: polygon(0 0, 100% 0, 100% 10%, 0 10%);
+    transform: translate(-5px, 0);
+  }
+  10% {
+    clip-path: polygon(0 50%, 100% 50%, 100% 51%, 0 51%);
+    transform: translate(0);
+  }
+  12% {
+    clip-path: polygon(0 29%, 100% 29%, 100% 31%, 0 31%);
+  }
+  50% {
+    opacity: 1;
+    transform: translateZ(0);
+    clip-path: polygon(0 2%, 100% 2%, 100% 98%, 0 98%);
+  }
+  51% {
+    opacity: 0.8;
+    clip-path: polygon(0 40%, 100% 40%, 100% 42%, 0 42%);
+  }
+  52% {
+    clip-path: polygon(0 90%, 100% 90%, 100% 92%, 0 92%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateZ(0);
+    clip-path: polygon(0 2%, 100% 2%, 100% 98%, 0 98%);
+  }
+}
+
+.glitch {
+  position: relative;
+  display: inline-block;
+  animation: glitch-animation 2.5s infinite linear;
+}
+
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: black;
+  overflow: hidden;
+}
+
+.glitch::before {
+  left: 2px;
+  text-shadow: -1px 0 red;
+  clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+  animation: glitch-animation 2s infinite linear alternate-reverse;
+}
+
+.glitch::after {
+  left: -2px;
+  text-shadow: -1px 0 blue;
+  clip-path: polygon(0 100%, 100% 100%, 100% 55%, 0 55%);
+  animation: glitch-animation 3s infinite linear alternate-reverse;
+} 
