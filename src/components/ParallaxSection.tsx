@@ -54,7 +54,7 @@ export default function ParallaxSection() {
 
   // --- Segment 3: Final Sequence ---
   const finalSequenceProgress = useTransform(scrollYProgress, [0.5, 1.0], [0, 1]);
-  const mandalaOpacity = useTransform(finalSequenceProgress, [0.0, 0.1, 0.1, 0.2], [0, 1, 1, 0]);
+  const mandalaOpacity = useTransform(finalSequenceProgress, [0.0, 0.1, 0.7, 0.8], [0, 1, 1, 0]);
   const color1Opacity = useTransform(finalSequenceProgress, [0.1, 0.2, 0.88, 0.9], [0, 1, 1, 0]);
   const color2Opacity = useTransform(finalSequenceProgress, [0.2, 0.3, 0.88, 0.9], [0, 1, 1, 0]);
   const color3Opacity = useTransform(finalSequenceProgress, [0.3, 0.4, 0.88, 0.9], [0, 1, 1, 0]);
@@ -127,7 +127,7 @@ export default function ParallaxSection() {
                   className="absolute w-full h-full flex items-center justify-center z-20"
                 >
                   <motion.div
-                    className="relative w-[60vmin] h-[60vmin]"
+                    className="relative w-[60vmin] aspect-[759/600]"
                   >
                     <motion.div
                       className="absolute inset-0"
@@ -172,7 +172,6 @@ export default function ParallaxSection() {
                       style={{ 
                         opacity: snack2Opacity, 
                         pointerEvents: snack2PointerEvents,
-                        scale: 1.5
                       }}
                     >
                       <Image
@@ -201,7 +200,7 @@ export default function ParallaxSection() {
           >
             <motion.div
               layoutId={`snack-image-${selectedImage}`}
-              className="relative w-[80vmin] h-[80vmin]"
+              className="relative w-[60vmin] aspect-[759/600]"
               style={{ rotate: 0 }}
             >
               <motion.div className="w-full h-full" style={{ scale: 1.5 }}>
