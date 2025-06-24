@@ -9,7 +9,7 @@ interface MandalaVideoProps {
 export default function MandalaVideo({ opacity }: MandalaVideoProps) {
   return (
     <motion.div
-      style={{ opacity }}
+      style={{ opacity, scale: 1.25 }}
       className="absolute inset-0 w-full h-full flex items-center justify-center"
     >
       <video

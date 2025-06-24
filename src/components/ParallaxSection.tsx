@@ -55,29 +55,32 @@ export default function ParallaxSection() {
   // --- Segment 3: Final Sequence ---
   const finalSequenceProgress = useTransform(scrollYProgress, [0.5, 1.0], [0, 1]);
   const mandalaOpacity = useTransform(finalSequenceProgress, [0.0, 0.1, 0.7, 0.8], [0, 1, 1, 0]);
-  const color1Opacity = useTransform(finalSequenceProgress, [0.1, 0.2, 0.88, 0.9], [0, 1, 1, 0]);
-  const color2Opacity = useTransform(finalSequenceProgress, [0.2, 0.3, 0.88, 0.9], [0, 1, 1, 0]);
-  const color3Opacity = useTransform(finalSequenceProgress, [0.3, 0.4, 0.88, 0.9], [0, 1, 1, 0]);
-  const color4Opacity = useTransform(finalSequenceProgress, [0.4, 0.5, 0.88, 0.9], [0, 1, 1, 0]);
+  const color1Opacity = useTransform(finalSequenceProgress, [0.10, 0.18, 0.26], [0, 1, 0]);
+  const color2Opacity = useTransform(finalSequenceProgress, [0.18, 0.22, 0.30], [0, 1, 0]);
+  const color3Opacity = useTransform(finalSequenceProgress, [0.22, 0.26, 0.34], [0, 1, 0]);
+  const color4Opacity = useTransform(finalSequenceProgress, [0.26, 0.30, 0.38], [0, 1, 0]);
   
   const gridContainerOpacity = useTransform(finalSequenceProgress, (p) => (p >= 0.88 ? 1 : 0));
   const gridProgress = useTransform(finalSequenceProgress, [0.90, 0.94], [0.1, 0.9]);
   
-  const saturation = useTransform(finalSequenceProgress, [0.95, 0.97], [1, 0]);
+  const saturation = useTransform(finalSequenceProgress, [0.93, 0.945, 0.97, 0.973], [1, 0, 0, 0]);
   const filter = useTransform(saturation, (s) => `saturate(${s})`);
 
-  const baseImageOpacity = useTransform(finalSequenceProgress, [0.98, 0.982], [1, 0]);
-  const snack1Opacity = useTransform(finalSequenceProgress, [0.98, 0.982, 0.998, 1.0], [0, 1, 1, 0]);
+  const snack1Opacity = useTransform(finalSequenceProgress, [0.973, 0.975, 0.978, 0.98], [0, 1, 1, 0]);
   const snack1PointerEvents = useTransform(snack1Opacity, (v) => (v > 0 ? 'auto' : 'none'));
-  const snack2Opacity = useTransform(finalSequenceProgress, [0.998, 1.0], [0, 1]);
+  const snack2Opacity = useTransform(finalSequenceProgress, [0.98, 0.985, 0.988, 0.99], [0, 1, 1, 0]);
   const snack2PointerEvents = useTransform(snack2Opacity, (v) => (v === 0 ? 'none' : 'auto'));
 
-  const textContainerOpacity = useTransform(finalSequenceProgress, [0.94, 0.95], [0, 1]);
+  const textContainerOpacity = useTransform(finalSequenceProgress, [0.94, 0.973, 0.98], [0, 1, 0]);
   const textTypingProgress = useTransform(finalSequenceProgress, [0.95, 0.97], [0, 1]);
 
+  const graveOpacity = useTransform(finalSequenceProgress, [0.99, 1.0], [0, 1]);
+  const graveY = useTransform(finalSequenceProgress, [0.99, 1.0], ['-50vh', '0vh']);
+
+  const baseImageOpacity = useTransform(finalSequenceProgress, [0.97, 0.973], [1, 0]);
 
   return (
-    <div ref={parallaxContainerRef} className="relative h-[2500vh]">
+    <div ref={parallaxContainerRef} className="relative h-[5000vh]">
       <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden">
         <AnimatedRectangle y={rectangleY} scale={rectangleScale} opacity={rectangleOpacity} contentY={rectangleContentY} />
         <ChatLog y={chatY} opacity={chatOpacity} contentY={chatContentY} onHeightReady={setChatScrollDistance} />
@@ -177,6 +180,28 @@ export default function ParallaxSection() {
                       <Image
                         src={dest.snackImage2}
                         alt={`Snack image 2 for ${i + 1}`}
+                        layout="fill"
+                        objectFit="contain"
+                      />
+                    </motion.div>
+
+                    <motion.div
+                      className="absolute inset-0"
+                      style={{
+                        opacity: graveOpacity,
+                        y: graveY,
+                        pointerEvents: 'auto',
+                      }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 120,
+                        damping: 12,
+                        mass: 1.2,
+                      }}
+                    >
+                      <Image
+                        src={`/grave_${i + 1}.png`}
+                        alt={`Grave image ${i + 1}`}
                         layout="fill"
                         objectFit="contain"
                       />
