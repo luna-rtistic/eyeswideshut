@@ -54,43 +54,58 @@ export default function ParallaxSection() {
 
   // --- Segment 3: Final Sequence ---
   const finalSequenceProgress = useTransform(scrollYProgress, [0.5, 1.0], [0, 1]);
-  const mandalaOpacity = useTransform(finalSequenceProgress, [0.0, 0.1, 0.7, 0.8], [0, 1, 1, 0]);
-  const color1Opacity = useTransform(finalSequenceProgress, [0.10, 0.18, 0.26], [0, 1, 0]);
-  const color2Opacity = useTransform(finalSequenceProgress, [0.18, 0.22, 0.30], [0, 1, 0]);
-  const color3Opacity = useTransform(finalSequenceProgress, [0.22, 0.26, 0.34], [0, 1, 0]);
-  const color4Opacity = useTransform(finalSequenceProgress, [0.26, 0.30, 0.38], [0, 1, 0]);
+  const mandalaOpacity = useTransform(finalSequenceProgress, [0.0, 0.1, 0.4, 0.45], [0, 1, 1, 0]);
+  const color1Opacity = useTransform(finalSequenceProgress, [0.50, 0.525, 0.60], [0, 1, 0]);
+  const color2Opacity = useTransform(finalSequenceProgress, [0.50, 0.525, 0.60], [0, 1, 0]);
+  const color3Opacity = useTransform(finalSequenceProgress, [0.50, 0.525, 0.60], [0, 1, 0]);
+  const color4Opacity = useTransform(finalSequenceProgress, [0.50, 0.525, 0.60], [0, 1, 0]);
   
-  const gridContainerOpacity = useTransform(finalSequenceProgress, (p) => (p >= 0.88 ? 1 : 0));
-  const gridProgress = useTransform(finalSequenceProgress, [0.90, 0.94], [0.1, 0.9]);
+  const gridContainerOpacity = useTransform(finalSequenceProgress, [0.40, 0.50], [0, 1]);
+  const gridProgress = useTransform(finalSequenceProgress, [0.70, 0.74], [0.1, 0.9]);
   
-  const saturation = useTransform(finalSequenceProgress, [0.93, 0.945, 0.97, 0.973], [1, 0, 0, 0]);
+  const saturation = useTransform(finalSequenceProgress, [0.73, 0.745, 0.77, 0.773], [1, 0, 0, 0]);
   const filter = useTransform(saturation, (s) => `saturate(${s})`);
 
-  const snack1Opacity = useTransform(finalSequenceProgress, [0.973, 0.975, 0.978, 0.98], [0, 1, 1, 0]);
+  const snack1Opacity = useTransform(finalSequenceProgress, [0.65, 0.69, 0.73, 0.75], [0, 1, 1, 0]);
   const snack1PointerEvents = useTransform(snack1Opacity, (v) => (v > 0 ? 'auto' : 'none'));
-  const snack2Opacity = useTransform(finalSequenceProgress, [0.98, 0.985, 0.988, 0.99], [0, 1, 1, 0]);
+  const snack2Opacity = useTransform(finalSequenceProgress, [0.75, 0.76, 0.78, 0.79], [0, 1, 1, 0]);
   const snack2PointerEvents = useTransform(snack2Opacity, (v) => (v === 0 ? 'none' : 'auto'));
 
-  const textContainerOpacity = useTransform(finalSequenceProgress, [0.94, 0.973, 0.98], [0, 1, 0]);
-  const textTypingProgress = useTransform(finalSequenceProgress, [0.95, 0.97], [0, 1]);
+  const textContainerOpacity = useTransform(finalSequenceProgress, [0.74, 0.773, 0.78], [0, 1, 0]);
+  const textTypingProgress = useTransform(finalSequenceProgress, [0.75, 0.77], [0, 1]);
 
-  const graveOpacity = useTransform(finalSequenceProgress, [0.99, 1.0], [0, 1]);
-  const graveY = useTransform(finalSequenceProgress, [0.99, 1.0], ['-50vh', '0vh']);
+  const graveOpacity = useTransform(finalSequenceProgress, [0.79, 1.0], [0, 1]);
+  const graveY = useTransform(finalSequenceProgress, [0.79, 1.0], ['-50vh', '0vh']);
 
-  const baseImageOpacity = useTransform(finalSequenceProgress, [0.97, 0.973], [1, 0]);
+  const baseImageOpacity = useTransform(finalSequenceProgress, [0.77, 0.773], [1, 0]);
+
+  // 애니메이션 진행률을 0-100으로 변환
+  const animationProgress = useTransform(scrollYProgress, (value) => Math.round(value * 100));
 
   return (
     <div ref={parallaxContainerRef} className="relative h-[5000vh]">
+      {/* 애니메이션 진행률 표시 */}
+      <motion.div 
+        className="fixed top-4 right-4 z-50 bg-black bg-opacity-50 px-3 py-2 rounded-lg"
+        style={{ color: 'red' }}
+      >
+        <motion.div className="font-mono text-xl font-bold">
+          {animationProgress}
+        </motion.div>
+      </motion.div>
+
       <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden">
         <AnimatedRectangle y={rectangleY} scale={rectangleScale} opacity={rectangleOpacity} contentY={rectangleContentY} />
         <ChatLog y={chatY} opacity={chatOpacity} contentY={chatContentY} onHeightReady={setChatScrollDistance} />
 
         <div className="absolute inset-0 z-20">
           <MandalaVideo opacity={mandalaOpacity} />
-          <ColorImage opacity={color1Opacity} src="/color_1.png" />
-          <ColorImage opacity={color2Opacity} src="/color_2.png" />
-          <ColorImage opacity={color3Opacity} src="/color_3.png" />
-          <ColorImage opacity={color4Opacity} src="/color_4.png" />
+          <div className="absolute inset-0 z-30 pointer-events-none">
+            <ColorImage opacity={color1Opacity} src="/color_1.png" />
+            <ColorImage opacity={color2Opacity} src="/color_2.png" />
+            <ColorImage opacity={color3Opacity} src="/color_3.png" />
+            <ColorImage opacity={color4Opacity} src="/color_4.png" />
+          </div>
 
           <motion.div style={{ opacity: gridContainerOpacity }} className="absolute inset-0">
             <motion.div
@@ -175,6 +190,8 @@ export default function ParallaxSection() {
                       style={{ 
                         opacity: snack2Opacity, 
                         pointerEvents: snack2PointerEvents,
+                        scale: 1.5,
+                        transformOrigin: 'center',
                       }}
                     >
                       <Image
@@ -191,6 +208,8 @@ export default function ParallaxSection() {
                         opacity: graveOpacity,
                         y: graveY,
                         pointerEvents: 'auto',
+                        scale: 1.5,
+                        transformOrigin: 'center',
                       }}
                       transition={{
                         type: 'spring',

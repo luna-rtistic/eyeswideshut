@@ -17,6 +17,6 @@ export default function Home() {
       {/* <FilteringTunnelSection /> */}
 
       <ParallaxSection />
-    </main>
+      </main>
   );
 }

@@ -41,7 +41,7 @@ body {
   51% {
     opacity: 0.8;
     clip-path: polygon(0 40%, 100% 40%, 100% 42%, 0 42%);
-  }
+}
   52% {
     clip-path: polygon(0 90%, 100% 90%, 100% 92%, 0 92%);
   }

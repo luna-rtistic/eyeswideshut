@@ -12,7 +12,7 @@ export default function ColorImage({ opacity, src }: ColorImageProps) {
       style={{ opacity }}
       className="absolute inset-0 w-full h-full flex items-center justify-center"
     >
-      <div className="relative w-[60%] h-[60%]">
+      <div className="relative w-[60vmin] aspect-[759/600]">
         <Image
           src={src}
           alt="Abstract colorful image"
