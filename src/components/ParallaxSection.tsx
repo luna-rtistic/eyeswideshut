@@ -55,12 +55,12 @@ export default function ParallaxSection() {
   // --- Segment 3: Final Sequence ---
   const finalSequenceProgress = useTransform(scrollYProgress, [0.5, 1.0], [0, 1]);
   const mandalaOpacity = useTransform(finalSequenceProgress, [0.0, 0.1, 0.4, 0.45], [0, 1, 1, 0]);
-  const color1Opacity = useTransform(finalSequenceProgress, [0.50, 0.525, 0.60], [0, 1, 0]);
-  const color2Opacity = useTransform(finalSequenceProgress, [0.50, 0.525, 0.60], [0, 1, 0]);
-  const color3Opacity = useTransform(finalSequenceProgress, [0.50, 0.525, 0.60], [0, 1, 0]);
-  const color4Opacity = useTransform(finalSequenceProgress, [0.50, 0.525, 0.60], [0, 1, 0]);
+  const color1Opacity = useTransform(finalSequenceProgress, [0.50, 0.55], [0, 1]);
+  const color2Opacity = useTransform(finalSequenceProgress, [0.55, 0.60], [0, 1]);
+  const color3Opacity = useTransform(finalSequenceProgress, [0.60, 0.65], [0, 1]);
+  const color4Opacity = useTransform(finalSequenceProgress, [0.65, 0.70], [0, 1]);
   
-  const gridContainerOpacity = useTransform(finalSequenceProgress, [0.40, 0.50], [0, 1]);
+  const gridContainerOpacity = useTransform(finalSequenceProgress, [0.48, 0.50], [0, 1]);
   const gridProgress = useTransform(finalSequenceProgress, [0.70, 0.74], [0.1, 0.9]);
   
   const saturation = useTransform(finalSequenceProgress, [0.73, 0.745, 0.77, 0.773], [1, 0, 0, 0]);
@@ -77,10 +77,22 @@ export default function ParallaxSection() {
   const graveOpacity = useTransform(finalSequenceProgress, [0.79, 1.0], [0, 1]);
   const graveY = useTransform(finalSequenceProgress, [0.79, 1.0], ['-50vh', '0vh']);
 
-  const baseImageOpacity = useTransform(finalSequenceProgress, [0.77, 0.773], [1, 0]);
+  const baseImageOpacity = useTransform(finalSequenceProgress, [0.48, 0.50], [0, 0]);
 
   // 애니메이션 진행률을 0-100으로 변환
   const animationProgress = useTransform(scrollYProgress, (value) => Math.round(value * 100));
+
+  // 디버깅: 74%에서 opacity 값 확인
+  if (typeof window !== 'undefined') {
+    import('framer-motion').then(({ useMotionValueEvent }) => {
+      useMotionValueEvent(animationProgress, 'change', (v) => {
+        if (v === 74) {
+          // eslint-disable-next-line no-console
+          console.log('[DEBUG] 74% - color4Opacity:', color4Opacity.get(), 'baseImageOpacity:', baseImageOpacity.get(), 'gridContainerOpacity:', gridContainerOpacity.get());
+        }
+      });
+    });
+  }
 
   return (
     <div ref={parallaxContainerRef} className="relative h-[5000vh]">
