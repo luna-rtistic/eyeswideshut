@@ -12,13 +12,13 @@ const ChatLog = dynamic(() => import("./ChatLog"), { ssr: false });
 
 const destinations = [
   // Top row
-  { x: "-25vw", y: "-25vh", scale: 0.4, snackImage: "/snack_1-1.png", snackImage2: "/snack_1-2.png" },
-  { x: "0vw", y: "-30vh", scale: 0.4, snackImage: "/snack_2-1.png", snackImage2: "/snack_2-2.png" },
-  { x: "25vw", y: "-25vh", scale: 0.4, snackImage: "/snack_3-1.png", snackImage2: "/snack_3-2.png" },
+  { x: "-25vw", y: "-25vh", scale: 0.52, snackImage: "/snack_1-1.png", snackImage2: "/snack_1-2.png" },
+  { x: "0vw", y: "-30vh", scale: 0.52, snackImage: "/snack_2-1.png", snackImage2: "/snack_2-2.png" },
+  { x: "25vw", y: "-25vh", scale: 0.52, snackImage: "/snack_3-1.png", snackImage2: "/snack_3-2.png" },
   // Bottom row
-  { x: "-25vw", y: "25vh", scale: 0.4, snackImage: "/snack_4-1.png", snackImage2: "/snack_4-2.png" },
-  { x: "0vw", y: "30vh", scale: 0.4, snackImage: "/snack_5-1.png", snackImage2: "/snack_5-2.png" },
-  { x: "25vw", y: "25vh", scale: 0.4, snackImage: "/snack_6-1.png", snackImage2: "/snack_6-2.png" },
+  { x: "-25vw", y: "25vh", scale: 0.52, snackImage: "/snack_4-1.png", snackImage2: "/snack_4-2.png" },
+  { x: "0vw", y: "30vh", scale: 0.52, snackImage: "/snack_5-1.png", snackImage2: "/snack_5-2.png" },
+  { x: "25vw", y: "25vh", scale: 0.52, snackImage: "/snack_6-1.png", snackImage2: "/snack_6-2.png" },
 ];
 
 const typingText = "Perception is being adjusted...";
@@ -79,10 +79,17 @@ export default function ParallaxSection() {
   const errorPopupOpacity = useTransform(finalSequenceProgress, [0.82, 0.84, 0.86, 0.88], [0, 1, 1, 0]);
 
   // Snack images appear after popup disappears and grid starts to disappear
-  const snackImagesOpacity = useTransform(finalSequenceProgress, [0.88, 0.90], [0, 1]);
+  const snackImagesOpacity = useTransform(finalSequenceProgress, [0.88, 0.90, 0.95, 0.96], [0, 1, 1, 0]);
+  
+  // Snack images transition from -1 to -2 version
+  const snackImageTransition = useTransform(finalSequenceProgress, [0.92, 0.94], [0, 1]);
 
-  const graveOpacity = useTransform(finalSequenceProgress, [0.79, 1.0], [0, 1]);
-  const graveY = useTransform(finalSequenceProgress, [0.79, 1.0], ['-50vh', '0vh']);
+  // Grave images fall from sky with heavy effect
+  const graveOpacity = useTransform(finalSequenceProgress, [0.95, 0.97, 0.985, 0.995], [0, 1, 1, 0]);
+  const graveY = useTransform(finalSequenceProgress, [0.95, 0.97], ['-100vh', '0vh']);
+
+  // Cyber glitch text appears while graves are disappearing
+  const glitchTextOpacity = useTransform(finalSequenceProgress, [0.985, 0.995], [0, 1]);
 
   const baseImageOpacity = useTransform(finalSequenceProgress, [0.48, 0.50], [0, 0]);
 
@@ -100,6 +107,17 @@ export default function ParallaxSection() {
           {animationProgress}
         </motion.div>
       </motion.div>
+
+      {/* Start Over Button */}
+      <motion.button
+        className="fixed z-50 text-white font-mono text-sm hover:text-gray-300 transition-colors duration-300"
+        style={{ bottom: 'calc(1rem + 50px)', right: 'calc(1rem + 50px)' }}
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        ▴ start over
+      </motion.button>
 
       <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden">
         <AnimatedRectangle y={rectangleY} scale={rectangleScale} opacity={rectangleOpacity} contentY={rectangleContentY} />
@@ -186,10 +204,10 @@ export default function ParallaxSection() {
                     y: y,
                     scale: scale
                   }}
-                  initial={{ opacity: 0, scale: 0.5, rotate: 0 }}
+                  initial={{ opacity: 0, scale: 0.5 }}
                   animate={{ 
                     opacity: 1, 
-                    scale: scale, 
+                    scale: scale,
                     rotate: 90,
                     transition: { 
                       delay: index * 0.1,
@@ -199,19 +217,184 @@ export default function ParallaxSection() {
                   }}
                 >
                   <div className="relative w-[60vmin] aspect-[759/600]">
+                    <motion.div
+                      style={{ opacity: useTransform(snackImageTransition, [0, 0.5], [1, 0]) }}
+                      className="absolute inset-0"
+                    >
+                      <Image
+                        src={`/snack_${index + 1}-1.png`}
+                        alt={`Snack ${index + 1} version 1`}
+                        layout="fill"
+                        objectFit="contain"
+                        style={{ transform: 'scale(1.3)' }}
+                        onClick={() => setSelectedSnackImage(`/snack_${index + 1}-1.png`)}
+                        className="cursor-pointer"
+                      />
+                    </motion.div>
+                    <motion.div
+                      style={{ opacity: useTransform(snackImageTransition, [0.5, 1], [0, 1]) }}
+                      className="absolute inset-0"
+                    >
+                      <Image
+                        src={`/snack_${index + 1}-2.png`}
+                        alt={`Snack ${index + 1} version 2`}
+                        layout="fill"
+                        objectFit="contain"
+                        style={{ transform: 'scale(1.3)' }}
+                        onClick={() => setSelectedSnackImage(`/snack_${index + 1}-2.png`)}
+                        className="cursor-pointer"
+                      />
+                    </motion.div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+
+          {/* Grave Images that fall from sky */}
+          <motion.div 
+            style={{ opacity: graveOpacity }}
+            className="absolute inset-0 z-50"
+          >
+            {destinations.map((dest, index) => {
+              const x = dest.x;
+              const y = dest.y;
+              const scale = dest.scale;
+              const graveYPosition = useTransform(finalSequenceProgress, [0.95, 0.97], ['-100vh', y]);
+
+              return (
+                <motion.div
+                  key={index}
+                  className="absolute w-full h-full flex items-center justify-center"
+                  style={{ 
+                    x: x,
+                    y: graveYPosition,
+                    scale: scale
+                  }}
+                  initial={{ opacity: 0, scale: 0.8, y: '-100vh' }}
+                  animate={{ 
+                    opacity: 1, 
+                    scale: scale,
+                    y: '0vh',
+                    transition: { 
+                      delay: index * 0.5,
+                      duration: 2.5,
+                      ease: [0.25, 0.46, 0.45, 0.94], // Custom easing for heavy feel
+                      scale: {
+                        duration: 2.5,
+                        ease: "easeOut"
+                      }
+                    }
+                  }}
+                >
+                  <div className="relative w-[60vmin] aspect-[759/600]">
                     <Image
-                      src={`/snack_${index + 1}-1.png`}
-                      alt={`Snack ${index + 1}`}
+                      src={`/grave_${index + 1}.png`}
+                      alt={`Grave ${index + 1}`}
                       layout="fill"
                       objectFit="contain"
-                      style={{ transform: 'scale(1.5)' }}
-                      onClick={() => setSelectedSnackImage(`/snack_${index + 1}-1.png`)}
+                      style={{ transform: 'scale(1.3)' }}
                       className="cursor-pointer"
                     />
                   </div>
                 </motion.div>
               );
             })}
+          </motion.div>
+
+          {/* Cyber Glitch Text */}
+          <motion.div
+            style={{ opacity: glitchTextOpacity }}
+            className="absolute inset-0 z-[60] flex items-center justify-center"
+          >
+            <div className="text-center">
+              <motion.div
+                className="font-mono text-4xl md:text-6xl font-light text-white mb-8 relative overflow-hidden"
+                style={{
+                  textShadow: `
+                    0 0 8px rgba(0, 255, 0, 0.4),
+                    0 0 15px rgba(0, 255, 0, 0.3),
+                    1px 1px 0px rgba(255, 0, 255, 0.6),
+                    -1px -1px 0px rgba(0, 255, 255, 0.6)
+                  `,
+                  filter: 'drop-shadow(0 0 8px rgba(0, 255, 0, 0.4))',
+                  letterSpacing: '-0.02em',
+                  lineHeight: '1.2'
+                }}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ 
+                  opacity: 1, 
+                  scale: 1,
+                  transition: { 
+                    duration: 1.0,
+                    ease: "easeOut"
+                  }
+                }}
+              >
+                {/* Main Text */}
+                <motion.span
+                  animate={{
+                    textShadow: [
+                      "0 0 8px rgba(0, 255, 0, 0.4), 0 0 15px rgba(0, 255, 0, 0.3), 1px 1px 0px rgba(255, 0, 255, 0.6), -1px -1px 0px rgba(0, 255, 255, 0.6)",
+                      "0 0 8px rgba(0, 255, 255, 0.4), 0 0 15px rgba(0, 255, 255, 0.3), 1px 1px 0px rgba(0, 255, 0, 0.6), -1px -1px 0px rgba(255, 0, 255, 0.6)",
+                      "0 0 8px rgba(255, 0, 255, 0.4), 0 0 15px rgba(255, 0, 255, 0.3), 1px 1px 0px rgba(0, 255, 255, 0.6), -1px -1px 0px rgba(0, 255, 0, 0.6)",
+                      "0 0 8px rgba(0, 255, 0, 0.4), 0 0 15px rgba(0, 255, 0, 0.3), 1px 1px 0px rgba(255, 0, 255, 0.6), -1px -1px 0px rgba(0, 255, 255, 0.6)"
+                    ],
+                    x: [0, 2, -2, 1, -1, 0],
+                    y: [0, 1, -1, 0.5, -0.5, 0]
+                  }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    repeatType: "reverse",
+                    x: {
+                      duration: 0.02,
+                      repeat: Infinity,
+                      repeatType: "reverse"
+                    },
+                    y: {
+                      duration: 0.02,
+                      repeat: Infinity,
+                      repeatType: "reverse"
+                    }
+                  }}
+                >
+                  You don't know what you've given
+                </motion.span>
+                
+                {/* Second Line */}
+                <motion.span
+                  className="block mt-4"
+                  animate={{
+                    textShadow: [
+                      "0 0 8px rgba(255, 0, 0, 0.4), 0 0 15px rgba(255, 0, 0, 0.3), 1px 1px 0px rgba(0, 255, 255, 0.6), -1px -1px 0px rgba(255, 0, 255, 0.6)",
+                      "0 0 8px rgba(0, 255, 255, 0.4), 0 0 15px rgba(0, 255, 255, 0.3), 1px 1px 0px rgba(255, 0, 0, 0.6), -1px -1px 0px rgba(0, 255, 0, 0.6)",
+                      "0 0 8px rgba(255, 0, 255, 0.4), 0 0 15px rgba(255, 0, 255, 0.3), 1px 1px 0px rgba(0, 255, 0, 0.6), -1px -1px 0px rgba(255, 0, 0, 0.6)",
+                      "0 0 8px rgba(255, 0, 0, 0.4), 0 0 15px rgba(255, 0, 0, 0.3), 1px 1px 0px rgba(0, 255, 255, 0.6), -1px -1px 0px rgba(255, 0, 255, 0.6)"
+                    ],
+                    x: [0, -2, 2, -1, 1, 0],
+                    y: [0, -1, 1, -0.5, 0.5, 0]
+                  }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    repeatType: "reverse",
+                    x: {
+                      duration: 0.025,
+                      repeat: Infinity,
+                      repeatType: "reverse"
+                    },
+                    y: {
+                      duration: 0.025,
+                      repeat: Infinity,
+                      repeatType: "reverse"
+                    }
+                  }}
+                >
+                  but they already know what to take
+                </motion.span>
+              </motion.div>
+            </div>
           </motion.div>
         </div>
       </div>
