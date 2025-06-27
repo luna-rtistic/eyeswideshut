@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useScroll, useTransform, motion, AnimatePresence } from "framer-motion";
 import AnimatedRectangle from "@/components/AnimatedRectangle";
 import ColorImage from "./ColorImage";
@@ -24,16 +24,54 @@ const destinations = [
 const typingText = "Perception is being adjusted...";
 const characters = Array.from(typingText);
 
+interface MouseTrail {
+  id: number;
+  x: number;
+  y: number;
+  timestamp: number;
+}
+
 export default function ParallaxSection() {
   const parallaxContainerRef = useRef(null);
   const [chatScrollDistance, setChatScrollDistance] = useState(0);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedSnackImage, setSelectedSnackImage] = useState<string | null>(null);
+  const [mouseTrails, setMouseTrails] = useState<MouseTrail[]>([]);
+  const trailIdRef = useRef(0);
 
   const { scrollYProgress } = useScroll({
     target: parallaxContainerRef,
     offset: ["start start", "end end"],
   });
+
+  // Mouse trail effect
+  useEffect(() => {
+    let lastMouseMove = 0;
+    const throttleDelay = 50; // 50ms throttle
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const now = Date.now();
+      if (now - lastMouseMove < throttleDelay) return;
+      lastMouseMove = now;
+
+      const newTrail: MouseTrail = {
+        id: trailIdRef.current++,
+        x: e.clientX,
+        y: e.clientY,
+        timestamp: now
+      };
+
+      setMouseTrails(prev => [...prev, newTrail]);
+
+      // Remove trails older than 3 seconds
+      setTimeout(() => {
+        setMouseTrails(prev => prev.filter(trail => trail.id !== newTrail.id));
+      }, 3000);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   // TIMELINE:
   // 0.0 - 0.25: Rectangle lifecycle
@@ -98,6 +136,40 @@ export default function ParallaxSection() {
 
   return (
     <div ref={parallaxContainerRef} className="relative h-[5000vh]">
+      {/* Mouse Trail Effect */}
+      <div className="fixed inset-0 pointer-events-none z-[100]">
+        <AnimatePresence>
+          {mouseTrails.map((trail) => (
+            <motion.div
+              key={trail.id}
+              className="absolute w-4 h-4 rounded-full"
+              style={{
+                left: trail.x - 8,
+                top: trail.y - 8,
+                background: 'radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%)',
+                boxShadow: '0 0 10px rgba(255, 255, 255, 0.2)',
+                transform: 'translate(-50%, -50%)'
+              }}
+              initial={{ 
+                opacity: 0, 
+                scale: 0.5,
+                filter: 'blur(0px)'
+              }}
+              animate={{ 
+                opacity: [0, 0.8, 0.6, 0.4, 0.2, 0],
+                scale: [0.5, 1, 1.2, 1.4, 1.6, 1.8],
+                filter: 'blur(2px)'
+              }}
+              transition={{
+                duration: 3,
+                ease: "easeOut"
+              }}
+              exit={{ opacity: 0, scale: 0 }}
+            />
+          ))}
+        </AnimatePresence>
+      </div>
+
       {/* 애니메이션 진행률 표시 */}
       <motion.div 
         className="fixed top-4 right-4 z-50 bg-black bg-opacity-50 px-3 py-2 rounded-lg"

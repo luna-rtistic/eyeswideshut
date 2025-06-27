@@ -57,14 +57,14 @@ const ChatLog = ({ y, opacity, contentY, onHeightReady }: ChatLogProps) => {
 
   return (
     <motion.div style={{ y, opacity }} className="absolute">
-      <div className="w-[1000px] h-[90vh] bg-black/80 backdrop-blur-sm rounded-lg shadow-lg p-4 font-mono text-xl text-green-400 flex flex-col overflow-hidden border border-green-500/20">
+      <div className="w-[1000px] h-[90vh] bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-4 font-mono text-xl text-green-400 flex flex-col overflow-hidden border border-green-500/20">
         <div className="flex-shrink-0 p-2 bg-gray-800/50 flex items-center rounded-t-lg">
           <div className="flex space-x-2">
             <div className="w-3.5 h-3.5 rounded-full bg-red-500"></div>
             <div className="w-3.5 h-3.5 rounded-full bg-yellow-500"></div>
             <div className="w-3.5 h-3.5 rounded-full bg-green-500"></div>
           </div>
-          <span className="flex-grow text-center text-gray-400">zsh</span>
+          <span className="flex-grow text-center text-gray-400 text-sm font-light">Message</span>
         </div>
         <div
           ref={viewportRef}
@@ -73,7 +73,7 @@ const ChatLog = ({ y, opacity, contentY, onHeightReady }: ChatLogProps) => {
             maskImage: "linear-gradient(to bottom, black 95%, transparent 100%)",
           }}
         >
-          <motion.div ref={messagesContainerRef} style={{ y: contentY }} className="flex flex-col space-y-8">
+          <motion.div ref={messagesContainerRef} style={{ y: contentY }} className="flex flex-col space-y-10">
             {messages.map((msg) => {
               const isUser = msg.sender === "user";
               const isSystem = msg.sender === "system";
@@ -82,20 +82,30 @@ const ChatLog = ({ y, opacity, contentY, onHeightReady }: ChatLogProps) => {
                 <div
                   className={
                     isSystem
-                      ? "font-mono text-gray-400 text-lg italic tracking-tight"
-                      : `max-w-full rounded-2xl px-4 py-2 font-mono text-xl tracking-tight ${
+                      ? "font-mono text-gray-400 text-base italic tracking-tight"
+                      : `max-w-full rounded-2xl px-6 py-3 font-mono text-lg tracking-tight ${
                           isUser
-                            ? "bg-[#6ACC46] text-black rounded-br-none"
-                            : "bg-gray-400 text-black rounded-bl-none"
+                            ? "text-black rounded-br-none"
+                            : "bg-gradient-to-br from-white via-gray-50 to-gray-100 text-black rounded-bl-none"
                         }`
                   }
+                  style={{
+                    boxShadow: isSystem 
+                      ? 'none'
+                      : isUser 
+                        ? '0 0 8px rgba(51, 255, 0, 0.3)' 
+                        : '0 0 8px rgba(255, 255, 255, 0.2)',
+                    background: isUser 
+                      ? 'linear-gradient(to bottom right, #33FF00, #2ECC71, #33FF00)' 
+                      : undefined
+                  }}
                 >
                   {msg.text}
                 </div>
               );
 
               const timestamp = msg.time && (
-                <span className="text-xs text-gray-500 self-end mx-2">
+                <span className="text-xs text-gray-500 self-end mx-3">
                   {msg.time}
                 </span>
               );
@@ -137,7 +147,7 @@ const ChatLog = ({ y, opacity, contentY, onHeightReady }: ChatLogProps) => {
           <input
             type="text"
             placeholder="Enter message..."
-            className="flex-grow bg-gray-900/70 rounded-md px-4 py-2 text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500/50 border border-transparent focus:border-green-500/50 transition-all"
+            className="flex-grow bg-gray-900/70 rounded-md px-4 py-2 text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500/50 border border-transparent focus:border-green-500/50 transition-all text-sm font-light"
             disabled
           />
           <button className="bg-green-600 text-white font-bold px-6 py-2 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50" disabled>

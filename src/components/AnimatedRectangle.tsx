@@ -19,7 +19,7 @@ interface AnimatedRectangleProps {
 const AnimatedRectangle = ({ y, scale, opacity, contentY }: AnimatedRectangleProps) => {
   return (
     <motion.div style={{ y, opacity }} className="absolute z-10">
-      <motion.div style={{ scale }} className="h-[600px] w-[300px] bg-white origin-center overflow-hidden">
+      <motion.div style={{ scale }} className="h-[600px] w-[300px] bg-white origin-center overflow-hidden rounded-lg">
         <motion.div className="p-4 grid grid-cols-3 gap-4" style={{ y: contentY }}>
           {imageUrls.map((url, index) => (
             <div key={index} className="aspect-square relative">

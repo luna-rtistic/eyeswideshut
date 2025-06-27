@@ -11,9 +11,7 @@ const IntroSection = () => {
     >
       {/* Left Column: Terminal (z-20) */}
       <div className="pr-4 relative z-20" style={{ width: 'calc(50% + 50px)', paddingLeft: '30px' }}>
-        {/* Spacer Div to force empty space */}
-        <div style={{ height: '420px' }} /> 
-        <div style={{ border: '2px solid white', padding: '1.5rem' }}>
+        <div style={{ padding: '1.5rem' }}>
           <SurveillanceTerminal />
         </div>
       </div>
