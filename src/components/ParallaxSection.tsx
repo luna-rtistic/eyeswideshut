@@ -28,7 +28,7 @@ export default function ParallaxSection() {
   const parallaxContainerRef = useRef(null);
   const [chatScrollDistance, setChatScrollDistance] = useState(0);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [okClicked, setOkClicked] = useState(false);
+  const [selectedSnackImage, setSelectedSnackImage] = useState<string | null>(null);
 
   const { scrollYProgress } = useScroll({
     target: parallaxContainerRef,
@@ -61,7 +61,7 @@ export default function ParallaxSection() {
   const color3Opacity = useTransform(finalSequenceProgress, [0.48, 0.50, 0.55, 0.56], [0, 1, 1, 0]);
   const color4Opacity = useTransform(finalSequenceProgress, [0.50, 0.52, 0.55, 0.56], [0, 1, 1, 0]);
   
-  const gridContainerOpacity = useTransform(finalSequenceProgress, [0.54, 0.56], [0, 1]);
+  const gridContainerOpacity = useTransform(finalSequenceProgress, [0.54, 0.56, 0.88, 0.90], [0, 1, 1, 0]);
   const gridProgress = useTransform(finalSequenceProgress, [0.56, 0.60], [0.1, 0.9]);
   
   const saturation = useTransform(finalSequenceProgress, [0.74, 0.75, 0.77, 0.773], [1, 1, 0, 0]);
@@ -75,7 +75,11 @@ export default function ParallaxSection() {
   const textContainerOpacity = useTransform(finalSequenceProgress, [0.74, 0.773, 0.78], [0, 1, 0]);
   const textTypingProgress = useTransform(finalSequenceProgress, [0.75, 0.77], [0, 1]);
 
-  const errorPopupOpacity = useTransform(finalSequenceProgress, [0.78, 0.80], [0, 1]);
+  // Error popup appears and disappears
+  const errorPopupOpacity = useTransform(finalSequenceProgress, [0.82, 0.84, 0.86, 0.88], [0, 1, 1, 0]);
+
+  // Snack images appear after popup disappears and grid starts to disappear
+  const snackImagesOpacity = useTransform(finalSequenceProgress, [0.88, 0.90], [0, 1]);
 
   const graveOpacity = useTransform(finalSequenceProgress, [0.79, 1.0], [0, 1]);
   const graveY = useTransform(finalSequenceProgress, [0.79, 1.0], ['-50vh', '0vh']);
@@ -113,8 +117,6 @@ export default function ParallaxSection() {
           <motion.div 
             style={{ opacity: gridContainerOpacity }} 
             className="absolute inset-0 z-40"
-            animate={{ opacity: okClicked ? 0 : undefined }}
-            transition={{ duration: okClicked ? 0.5 : 0 }}
           >
             <motion.div
               style={{ opacity: textContainerOpacity }}
@@ -165,121 +167,122 @@ export default function ParallaxSection() {
             })}
           </motion.div>
 
-          {/* Snack Images that appear after OK button click */}
-          {okClicked && (
-            <div className="absolute inset-0 z-50">
-              {destinations.map((dest, index) => {
-                const x = dest.x;
-                const y = dest.y;
-                const scale = dest.scale;
+          {/* Snack Images that appear after scrolling more */}
+          <motion.div 
+            style={{ opacity: snackImagesOpacity }}
+            className="absolute inset-0 z-50"
+          >
+            {destinations.map((dest, index) => {
+              const x = dest.x;
+              const y = dest.y;
+              const scale = dest.scale;
 
-                return (
-                  <motion.div
-                    key={index}
-                    className="absolute w-full h-full flex items-center justify-center"
-                    style={{ 
-                      x: x,
-                      y: y,
-                      scale: scale
-                    }}
-                    initial={{ opacity: 0, scale: 0.5, rotate: 0 }}
-                    animate={{ 
-                      opacity: 1, 
-                      scale: scale, 
-                      rotate: 90,
-                      transition: { 
-                        delay: index * 0.1,
-                        duration: 0.5,
-                        ease: "easeOut"
-                      }
-                    }}
-                  >
-                    <div className="relative w-[60vmin] aspect-[759/600]">
-                      <Image
-                        src={`/snack_${index + 1}-1.png`}
-                        alt={`Snack ${index + 1}`}
-                        layout="fill"
-                        objectFit="contain"
-                      />
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
+              return (
+                <motion.div
+                  key={index}
+                  className="absolute w-full h-full flex items-center justify-center"
+                  style={{ 
+                    x: x,
+                    y: y,
+                    scale: scale
+                  }}
+                  initial={{ opacity: 0, scale: 0.5, rotate: 0 }}
+                  animate={{ 
+                    opacity: 1, 
+                    scale: scale, 
+                    rotate: 90,
+                    transition: { 
+                      delay: index * 0.1,
+                      duration: 0.5,
+                      ease: "easeOut"
+                    }
+                  }}
+                >
+                  <div className="relative w-[60vmin] aspect-[759/600]">
+                    <Image
+                      src={`/snack_${index + 1}-1.png`}
+                      alt={`Snack ${index + 1}`}
+                      layout="fill"
+                      objectFit="contain"
+                      style={{ transform: 'scale(1.5)' }}
+                      onClick={() => setSelectedSnackImage(`/snack_${index + 1}-1.png`)}
+                      className="cursor-pointer"
+                    />
+                  </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
         </div>
       </div>
 
       {/* Error Popup - moved to top level */}
-      {!okClicked && (
-        <motion.div
-          style={{ opacity: errorPopupOpacity }}
-          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[60]"
+      <motion.div
+        style={{ opacity: errorPopupOpacity }}
+        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[60]"
+      >
+        <div 
+          className="p-6 max-w-md mx-auto text-sm"
+          style={{
+            background: 'rgba(255, 255, 255, 0.2)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            borderRadius: '20px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+            textAlign: 'center',
+            fontSize: '80%'
+          }}
         >
-          <div 
-            className="p-6 max-w-md mx-auto text-sm"
-            style={{
-              background: 'rgba(255, 255, 255, 0.2)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: '20px',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-              textAlign: 'center',
-              fontSize: '80%'
-            }}
-          >
-            <div className="flex items-center justify-center space-x-3 mb-4">
-              <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div>
-                <h2 className="text-white font-semibold text-lg drop-shadow-lg">System Error</h2>
-                <p className="text-gray-200 text-sm drop-shadow">The application encountered an error</p>
-              </div>
+          <div className="flex items-center justify-center space-x-3 mb-4">
+            <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center">
+              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
             </div>
-            <div className="text-white font-mono text-sm space-y-2 mb-6">
-              <p 
-                className="p-2 rounded border-l-4 border-red-400 drop-shadow"
-                style={{ background: 'rgba(255, 255, 255, 0.1)' }}
-              >
-                <span className="text-red-300 font-semibold">ERR_001:</span> Perception adjustment failed
-              </p>
-              <p 
-                className="p-2 rounded border-l-4 border-red-400 drop-shadow"
-                style={{ background: 'rgba(255, 255, 255, 0.1)' }}
-              >
-                <span className="text-red-300 font-semibold">ERR_002:</span> Reality matrix corrupted
-              </p>
-              <p 
-                className="p-2 rounded border-l-4 border-red-400 drop-shadow"
-                style={{ background: 'rgba(255, 255, 255, 0.1)' }}
-              >
-                <span className="text-red-300 font-semibold">ERR_003:</span> Consciousness overflow detected
-              </p>
-            </div>
-            <div className="flex justify-center">
-              <button 
-                className="px-8 py-3 rounded-lg font-medium transition-all duration-300 text-white font-semibold shadow-lg"
-                style={{
-                  background: 'linear-gradient(135deg, #00ff88 0%, #00ccff 100%)',
-                  boxShadow: '0 4px 15px rgba(0, 255, 136, 0.4)'
-                }}
-                onMouseEnter={(e) => {
-                  (e.target as HTMLButtonElement).style.boxShadow = '0 6px 20px rgba(0, 255, 136, 0.6)';
-                }}
-                onMouseLeave={(e) => {
-                  (e.target as HTMLButtonElement).style.boxShadow = '0 4px 15px rgba(0, 255, 136, 0.4)';
-                }}
-                onClick={() => setOkClicked(true)}
-              >
-                OK
-              </button>
+            <div>
+              <h2 className="text-white font-semibold text-lg drop-shadow-lg">System Error</h2>
+              <p className="text-gray-200 text-sm drop-shadow">The application encountered an error</p>
             </div>
           </div>
-        </motion.div>
-      )}
+          <div className="text-white font-mono text-sm space-y-2 mb-6">
+            <p 
+              className="p-2 rounded border-l-4 border-red-400 drop-shadow"
+              style={{ background: 'rgba(255, 255, 255, 0.1)' }}
+            >
+              <span className="text-red-300 font-semibold">ERR_001:</span> Perception adjustment failed
+            </p>
+            <p 
+              className="p-2 rounded border-l-4 border-red-400 drop-shadow"
+              style={{ background: 'rgba(255, 255, 255, 0.1)' }}
+            >
+              <span className="text-red-300 font-semibold">ERR_002:</span> Reality matrix corrupted
+            </p>
+            <p 
+              className="p-2 rounded border-l-4 border-red-400 drop-shadow"
+              style={{ background: 'rgba(255, 255, 255, 0.1)' }}
+            >
+              <span className="text-red-300 font-semibold">ERR_003:</span> Consciousness overflow detected
+            </p>
+          </div>
+          <div className="flex justify-center">
+            <button 
+              className="px-8 py-3 rounded-lg font-medium transition-all duration-300 text-white font-semibold shadow-lg"
+              style={{
+                background: 'linear-gradient(135deg, #00ff88 0%, #00ccff 100%)',
+                boxShadow: '0 4px 15px rgba(0, 255, 136, 0.4)'
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLButtonElement).style.boxShadow = '0 6px 20px rgba(0, 255, 136, 0.6)';
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLButtonElement).style.boxShadow = '0 4px 15px rgba(0, 255, 136, 0.4)';
+              }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      </motion.div>
 
       <AnimatePresence>
         {selectedImage && (
@@ -309,6 +312,47 @@ export default function ParallaxSection() {
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1, transition: { delay: 0.3 } }}
                 exit={{ opacity: 0, scale: 0.5 }}
+                whileHover={{ rotate: 360, transition: { duration: 0.3 } }}
+              >
+                X
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Snack Image Modal */}
+      <AnimatePresence>
+        {selectedSnackImage && (
+          <motion.div
+            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[70]"
+            onClick={() => setSelectedSnackImage(null)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="relative w-[80vmin] aspect-[759/600]"
+              style={{ rotate: 0 }}
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.5 }}
+            >
+              <motion.div className="w-full h-full">
+                <Image
+                  src={selectedSnackImage}
+                  alt="Enlarged snack image"
+                  layout="fill"
+                  objectFit="contain"
+                />
+              </motion.div>
+              <motion.button
+                className="absolute top-4 right-4 bg-white rounded-full w-10 h-10 flex items-center justify-center text-black font-bold z-10 shadow-lg"
+                onClick={() => setSelectedSnackImage(null)}
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1, transition: { delay: 0.3 } }}
+                exit={{ opacity: 0, scale: 0.5 }}
+                whileHover={{ rotate: 360, transition: { duration: 0.3 } }}
               >
                 X
               </motion.button>

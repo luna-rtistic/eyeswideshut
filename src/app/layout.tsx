@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${robotoMono.variable} ${roboto.variable}`}>
-      <body className="font-mono">{children}</body>
+      <body className="font-mono" suppressHydrationWarning={true}>{children}</body>
     </html>
   );
 }
