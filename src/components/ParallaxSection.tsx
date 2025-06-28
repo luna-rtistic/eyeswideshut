@@ -80,11 +80,28 @@ export default function ParallaxSection() {
 
   // --- Segment 1: Rectangle ---
   const rectangleProgress = useTransform(scrollYProgress, [0, 0.25], [0, 1]);
-  const rectangleY = useTransform(rectangleProgress, [0.0, 0.4, 0.8, 1.0], ["100vh", "0vh", "0vh", "-100vh"]);
-  const rectangleScale = useTransform(rectangleProgress, [0.4, 0.8], [1, 1.2]);
-  const rectangleOpacity = useTransform(rectangleProgress, [0.0, 0.02, 0.98, 1.0], [0, 1, 1, 0]);
+  const rectangleY = useTransform(scrollYProgress, [0.005, 0.04, 0.06, 0.25, 0.27], ["100vh", "0vh", "0vh", "0vh", "-100vh"]);
+  const rectangleScale = useTransform(scrollYProgress, [0.04, 0.06, 0.25], [1, 1.2, 1.2]);
+  const rectangleOpacity = useTransform(scrollYProgress, [0.005, 0.01, 0.269, 0.27], [1, 1, 1, 0]);
   const rectangleContentY = useTransform(rectangleProgress, [0.4, 0.8], ["0%", "-60%"]);
   
+  // 애니메이션 진행률을 0-100으로 변환
+  const animationProgress = useTransform(scrollYProgress, (value) => Math.round(value * 100));
+  const [scrollNumber, setScrollNumber] = useState(0);
+  useEffect(() => {
+    const unsubscribe = animationProgress.onChange((v) => setScrollNumber(v));
+    return () => unsubscribe();
+  }, [animationProgress]);
+
+  // 내부 스크롤 구간: 0.06~0.25
+  const enableInnerScroll = scrollYProgress.get() >= 0.06 && scrollYProgress.get() < 0.25;
+  const innerScrollProgress = Math.max(0, Math.min(1, (scrollYProgress.get() - 0.06) / 0.19));
+  const gridRows = 14;
+  const rowHeight = 100; // px
+  const containerHeight = 520; // px
+  const innerScrollMax = (gridRows * rowHeight) - containerHeight; // 1400 - 520 = 880px
+  const innerScroll = enableInnerScroll ? innerScrollProgress * innerScrollMax : 0;
+
   // --- Segment 2: ChatLog ---
   const chatProgress = useTransform(scrollYProgress, [0.25, 0.5], [0, 1]);
   const chatY = useTransform(chatProgress, [0.0, 0.2, 0.8, 1.0], ["100vh", "0vh", "0vh", "-100vh"]);
@@ -130,9 +147,6 @@ export default function ParallaxSection() {
   const glitchTextOpacity = useTransform(finalSequenceProgress, [0.985, 0.995], [0, 1]);
 
   const baseImageOpacity = useTransform(finalSequenceProgress, [0.48, 0.50], [0, 0]);
-
-  // 애니메이션 진행률을 0-100으로 변환
-  const animationProgress = useTransform(scrollYProgress, (value) => Math.round(value * 100));
 
   return (
     <div ref={parallaxContainerRef} className="relative h-[5000vh]">
@@ -192,7 +206,16 @@ export default function ParallaxSection() {
       </motion.button>
 
       <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden">
-        <AnimatedRectangle y={rectangleY} scale={rectangleScale} opacity={rectangleOpacity} contentY={rectangleContentY} />
+        {scrollNumber >= 1 && scrollNumber < 27 && (
+          <AnimatedRectangle
+            y={rectangleY}
+            scale={rectangleScale}
+            opacity={rectangleOpacity}
+            contentY={rectangleContentY}
+            enableInnerScroll={enableInnerScroll}
+            innerScroll={innerScroll}
+          />
+        )}
         <ChatLog y={chatY} opacity={chatOpacity} contentY={chatContentY} onHeightReady={setChatScrollDistance} />
 
         <div className="absolute inset-0 z-20">
