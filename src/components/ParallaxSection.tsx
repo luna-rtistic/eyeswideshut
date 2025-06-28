@@ -198,7 +198,12 @@ export default function ParallaxSection() {
       <motion.button
         className="fixed z-50 text-white font-mono text-sm hover:text-gray-300 transition-colors duration-300"
         style={{ bottom: 'calc(1rem + 50px)', right: 'calc(1rem + 50px)' }}
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        onClick={() => {
+          window.scrollTo(0, 0);
+          window.location.reload();
+        }}
+        animate={{ opacity: [0.3, 1, 0.3] }}
+        transition={{ duration: 2, repeat: Infinity, repeatType: "loop" }}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
