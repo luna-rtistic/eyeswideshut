@@ -20,7 +20,7 @@ const IntroSection = () => {
       <div 
         className="absolute w-1/2 z-30"
         style={{
-          top: "20px",
+          top: "320px",
           left: "50%"
         }}
       >
@@ -36,25 +36,21 @@ const IntroSection = () => {
         </div>
       </div>
       
-      {/* Cookie Image Container (z-10) */}
+      {/* Cookie Image Container (z-10) - Moved to left side below terminal */}
       <div 
-        className="absolute w-1/2 z-10"
+        className="absolute z-10"
         style={{
-          top: "1080px",
-          left: "50%"
+          top: "1050px",
+          left: "80px"
         }}
       >
-        <div className="w-full max-w-[1040px]">
-           <div className="flex justify-start">
-            <Image
-              src="/cookie.gif"
-              alt="Cookie"
-              width={300}
-              height={300}
-              unoptimized
-            />
-          </div>
-        </div>
+        <Image
+          src="/cookie.gif"
+          alt="Cookie"
+          width={300}
+          height={300}
+          unoptimized
+        />
       </div>
     </section>
   );
