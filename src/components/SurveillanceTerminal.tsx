@@ -161,7 +161,7 @@ const SurveillanceTerminal = () => {
   }, [isComplete]);
 
   return (
-    <div className="font-mono py-4 px-6 flex flex-col items-center" style={{ fontSize: '2.025rem', lineHeight: '1.6', color: '#00FF2F' }}>
+    <div className="font-mono w-full flex flex-col items-start" style={{ fontSize: '2.025rem', lineHeight: '1.6', color: '#00FF2F' }}>
       <div ref={textContainerRef} className="inline-block">
         <p className="mb-4">&gt; EXECUTING SURVEILLANCE PROTOCOL...</p>
         {displayedLines.map((text, index) => (

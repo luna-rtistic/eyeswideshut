@@ -7,22 +7,21 @@ const IntroSection = () => {
   return (
     <section 
       className="h-screen w-full relative bg-black p-8"
-      style={{ backgroundColor: 'black' }}
+      style={{ backgroundColor: "black" }}
     >
-      {/* Left Column: Terminal (z-20) */}
-      <div className="pr-4 relative z-20" style={{ width: 'calc(50% + 50px)', paddingLeft: '30px' }}>
-        <div style={{ padding: '1.5rem' }}>
+      {/* Left Column: Terminal (z-20) - Positioned at top */}
+      <div className="pr-4 relative z-20" style={{ width: "calc(50% + 50px)", paddingLeft: "30px" }}>
+        <div style={{ padding: "1.5rem" }}>
           <SurveillanceTerminal />
         </div>
       </div>
 
       {/* Right Column: Text Image (z-30) */}
       <div 
-        className="absolute w-1/2 pl-4 -ml-64 z-30"
+        className="absolute w-1/2 z-30"
         style={{
-          top: '20px',
-          left: '50%',
-          paddingRight: '150px'
+          top: "20px",
+          left: "50%"
         }}
       >
         <div className="w-full max-w-[1040px]">
@@ -39,15 +38,14 @@ const IntroSection = () => {
       
       {/* Cookie Image Container (z-10) */}
       <div 
-        className="absolute w-1/2 pl-4 -ml-64 z-10"
+        className="absolute w-1/2 z-10"
         style={{
-          top: '1080px', // Adjusted to be below text_1
-          left: '50%',
-          paddingRight: '150px'
+          top: "1080px",
+          left: "50%"
         }}
       >
         <div className="w-full max-w-[1040px]">
-           <div className="flex justify-end" style={{ marginRight: '100px' }}>
+           <div className="flex justify-start">
             <Image
               src="/cookie.gif"
               alt="Cookie"
@@ -62,4 +60,4 @@ const IntroSection = () => {
   );
 };
 
-export default IntroSection; 
+export default IntroSection;

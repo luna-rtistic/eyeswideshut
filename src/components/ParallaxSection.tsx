@@ -161,7 +161,7 @@ export default function ParallaxSection() {
                 filter: 'blur(2px)'
               }}
               transition={{
-                duration: 3,
+                duration: 5,
                 ease: "easeOut"
               }}
               exit={{ opacity: 0, scale: 0 }}
