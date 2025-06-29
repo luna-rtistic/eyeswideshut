@@ -6,6 +6,7 @@ import AnimatedRectangle from "@/components/AnimatedRectangle";
 import ColorImage from "./ColorImage";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import ScrollVideoBackground from "@/components/ScrollVideoBackground";
 
 const MandalaVideo = dynamic(() => import("./MandalaVideo"), { ssr: false });
 const ChatLog = dynamic(() => import("./ChatLog"), { ssr: false });
@@ -73,13 +74,25 @@ export default function ParallaxSection() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+  // 하얀 네모(AnimatedRectangle) 구간: 0.005~0.27
+  const rectangleStart = 0.005;
+  const rectangleEnd = 0.27;
+  const rectangleProgress = useTransform(
+    scrollYProgress,
+    [rectangleStart, rectangleEnd],
+    [0, 1]
+  );
+
+  // 비디오 페이드 인/아웃 구간 (fadeOut이 네모 사라짐과 정확히 일치)
+  const fadeIn = 0.08;
+  const fadeOut = 0.92; // 0.92: rectangleProgress가 0.92일 때부터 fade out 시작
+
   // TIMELINE:
   // 0.0 - 0.25: Rectangle lifecycle
   // 0.25 - 0.5: ChatLog lifecycle
   // 0.5 - 1.0: Final sequence (Mandala, Colors, Grid)
 
   // --- Segment 1: Rectangle ---
-  const rectangleProgress = useTransform(scrollYProgress, [0, 0.25], [0, 1]);
   const rectangleY = useTransform(scrollYProgress, [0.005, 0.04, 0.06, 0.25, 0.27], ["100vh", "0vh", "0vh", "0vh", "-100vh"]);
   const rectangleScale = useTransform(scrollYProgress, [0.04, 0.06, 0.25], [1, 1.2, 1.2]);
   const rectangleOpacity = useTransform(scrollYProgress, [0.005, 0.01, 0.269, 0.27], [1, 1, 1, 0]);
@@ -150,6 +163,14 @@ export default function ParallaxSection() {
 
   return (
     <div ref={parallaxContainerRef} className="relative h-[5000vh]">
+      {/* 비디오 배경 */}
+      <ScrollVideoBackground
+        progress={rectangleProgress.get()}
+        fadeIn={fadeIn}
+        fadeOut={fadeOut}
+        duration={10}
+      />
+
       {/* Mouse Trail Effect */}
       <div className="fixed inset-0 pointer-events-none z-[100]">
         <AnimatePresence>
