@@ -8,19 +8,24 @@ export default function ParallaxImages({ progress }: { progress: number }) {
   const [imageConfigs, setImageConfigs] = useState<any[]>([]);
 
   useEffect(() => {
+    // 54개 (9x6)
+    const N = 54;
+    const cols = 9;
+    const rows = 6;
+    const repeatedUrls = Array.from({ length: N }, (_, i) => imageUrls[i % imageUrls.length]);
     setImageConfigs(
-      imageUrls.slice(0, 24).map((url, i) => {
-        const N = 24;
-        const maxDelay = 0.7857; // scrollYProgress 0.19에서 마지막 이미지 등장
+      repeatedUrls.map((url, i) => {
+        const maxDelay = 0.7857;
         const delay = i * (maxDelay / (N - 1)) + Math.random() * 0.01;
-        // 더 빠르게 화면에서 사라지게
         const speed = 0.08 + Math.random() * 0.4 + delay * 0.5;
-        // 이미지 크기 줄이기 (6~10vw)
-        const size = Math.random() * 4 + 6;
-        // x 좌표 완전 랜덤
-        const x = 2 + Math.random() * (96 - size);
-        // y 좌표 더 흩뿌리기 (더 위로)
-        const yStart = 90 + Math.random() * 40;
+        // 크기 1.3배 (기존 6~10vw → 7.8~13vw)
+        const size = (Math.random() * 4 + 6) * 1.3;
+        // 격자 분포
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        // x/y를 격자에 랜덤 오프셋 추가
+        const x = 2 + col * (96 - size) / (cols - 1) + Math.random() * 2;
+        const yStart = 90 + row * 8 + Math.random() * 4;
         const yEnd = -400 - Math.random() * 200;
         return {
           url,
