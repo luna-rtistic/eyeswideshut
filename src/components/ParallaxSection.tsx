@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import { useScroll, useTransform, motion, AnimatePresence } from "framer-motion";
 import AnimatedRectangle from "@/components/AnimatedRectangle";
 import ColorImage from "./ColorImage";
@@ -10,6 +10,7 @@ import ScrollVideoBackground from "@/components/ScrollVideoBackground";
 
 const MandalaVideo = dynamic(() => import("./MandalaVideo"), { ssr: false });
 const ChatLog = dynamic(() => import("./ChatLog"), { ssr: false });
+const ParallaxImages = dynamic(() => import("./ParallaxImages"), { ssr: false });
 
 const destinations = [
   // Top row
@@ -32,6 +33,11 @@ interface MouseTrail {
   timestamp: number;
 }
 
+// 실제 존재하는 이미지 파일만 사용
+const imageUrls = [
+  "/img_1-1.gif", "/img_2-1.png", "/img_3-1.png", "/img_4-1.png", "/img_5-1.png", "/img_6-1.png", "/img_7-1.png", "/img_8-1.png", "/img_9-1.png", "/img_10-1.png", "/img_11-1.gif", "/img_12-1.png", "/img_13-1.png", "/img_14-1.gif", "/img_15-1.png", "/img_16-1.png", "/img_17-1.png", "/img_18-1.gif", "/img_19-1.png", "/img_20-1.png", "/img_21-1.png", "/img_22-1.png", "/img_23-1.png", "/img_24-1.png", "/img_25-1.png", "/img_26-1.png", "/img_27-1.png", "/img_28-1.png", "/img_29-1.png", "/img_30-1.png"
+];
+
 export default function ParallaxSection() {
   const parallaxContainerRef = useRef(null);
   const [chatScrollDistance, setChatScrollDistance] = useState(0);
@@ -44,6 +50,21 @@ export default function ParallaxSection() {
     target: parallaxContainerRef,
     offset: ["start start", "end end"],
   });
+
+  const [imageConfigs, setImageConfigs] = useState<any[]>([]);
+  useEffect(() => {
+    setImageConfigs(
+      imageUrls.map((url, i) => ({
+        url,
+        x: Math.random() * 80 + 5,
+        yStart: 100 + Math.random() * 10,
+        yEnd: -100 - Math.random() * 40,
+        speed: 0.7 + Math.random() * 0.7,
+        size: Math.random() * 10 + 6,
+        delay: Math.random() * 0.12,
+      }))
+    );
+  }, []);
 
   // Mouse trail effect
   useEffect(() => {
@@ -74,9 +95,9 @@ export default function ParallaxSection() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // 하얀 네모(AnimatedRectangle) 구간: 0.005~0.27
+  // 하얀 네모(AnimatedRectangle) 구간: 0.005~0.23 (진행률 23에서 rectangleProgress=1)
   const rectangleStart = 0.005;
-  const rectangleEnd = 0.27;
+  const rectangleEnd = 0.23;
   const rectangleProgress = useTransform(
     scrollYProgress,
     [rectangleStart, rectangleEnd],
@@ -85,7 +106,14 @@ export default function ParallaxSection() {
 
   // 비디오 페이드 인/아웃 구간 (fadeOut이 네모 사라짐과 정확히 일치)
   const fadeIn = 0.08;
-  const fadeOut = 0.92; // 0.92: rectangleProgress가 0.92일 때부터 fade out 시작
+  // 비디오 fade out: 스크롤 진행률 23~25에 맞추기
+  const fadeOut = 0.9; // rectangleProgress 0.9에서 fade out 시작
+  const fadeOutEnd = 1.0; // rectangleProgress 1.0에서 완전히 사라짐
+
+  // 이미지 등장 구간: 비디오 fade in 시작(0.08)~rectangleProgress=1(진행률 23)에서 모두 사라짐
+  const imageAppearStart = 0.08;
+  const imageAppearEnd = 1;
+  const imageAppearProgress = Math.max(0, Math.min(1, (rectangleProgress.get() - imageAppearStart) / (imageAppearEnd - imageAppearStart)));
 
   // TIMELINE:
   // 0.0 - 0.25: Rectangle lifecycle
@@ -168,8 +196,12 @@ export default function ParallaxSection() {
         progress={rectangleProgress.get()}
         fadeIn={fadeIn}
         fadeOut={fadeOut}
+        fadeOutEnd={fadeOutEnd}
         duration={10}
       />
+
+      {/* Parallax 이미지 효과 (클라이언트 전용) */}
+      <ParallaxImages progress={imageAppearProgress} />
 
       {/* Mouse Trail Effect */}
       <div className="fixed inset-0 pointer-events-none z-[100]">
@@ -183,7 +215,8 @@ export default function ParallaxSection() {
                 top: trail.y - 8,
                 background: 'radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%)',
                 boxShadow: '0 0 10px rgba(255, 255, 255, 0.2)',
-                transform: 'translate(-50%, -50%)'
+                transform: 'translate(-50%, -50%)',
+                pointerEvents: 'none'
               }}
               initial={{ 
                 opacity: 0, 
@@ -232,16 +265,6 @@ export default function ParallaxSection() {
       </motion.button>
 
       <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden">
-        {scrollNumber >= 1 && scrollNumber < 27 && (
-          <AnimatedRectangle
-            y={rectangleY}
-            scale={rectangleScale}
-            opacity={rectangleOpacity}
-            contentY={rectangleContentY}
-            enableInnerScroll={enableInnerScroll}
-            innerScroll={innerScroll}
-          />
-        )}
         <ChatLog y={chatY} opacity={chatOpacity} contentY={chatContentY} onHeightReady={setChatScrollDistance} />
 
         <div className="absolute inset-0 z-20">
@@ -274,36 +297,6 @@ export default function ParallaxSection() {
                 })}
               </p>
             </motion.div>
-            
-            {destinations.map((dest, i) => {
-              const x = useTransform(gridProgress, [0.1, 0.9], ["0vw", dest.x]);
-              const yValue = parseFloat(dest.y);
-              const yUnit = dest.y.replace(yValue.toString(), '');
-              const arcY = `${yValue * 1.2}${yUnit}`;
-              const y = useTransform(gridProgress, [0.1, 0.5, 0.9], ["0vh", arcY, dest.y]);
-              const scale = useTransform(gridProgress, [0.1, 0.9], [1, dest.scale]);
-              const rotation = i % 2 === 0 ? 90 : -90;
-
-              // color_4.png가 6방향으로 움직이도록
-              return (
-                <motion.div
-                  key={i}
-                  style={{ x, y, scale }}
-                  className="absolute w-full h-full flex items-center justify-center z-20"
-                >
-                  <motion.div className="relative w-[60vmin] aspect-[759/600]">
-                    <motion.div className="absolute inset-0" style={{ filter }}>
-                      <Image
-                        src="/color_4.png"
-                        alt={`Color 4 grid image ${i + 1}`}
-                        layout="fill"
-                        objectFit="contain"
-                      />
-                    </motion.div>
-                  </motion.div>
-                </motion.div>
-              );
-            })}
           </motion.div>
 
           {/* Snack Images that appear after scrolling more */}

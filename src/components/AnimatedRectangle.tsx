@@ -17,9 +17,20 @@ interface AnimatedRectangleProps {
 }
 
 const AnimatedRectangle = ({ y, scale, opacity, contentY, enableInnerScroll = false, innerScroll = 0 }: AnimatedRectangleProps) => {
+  // 모든 hover 상태를 하나의 배열로 관리
+  const [hoveredIndexes, setHoveredIndexes] = useState(Array(42).fill(false));
+
+  const handleMouseEnter = (index: number) => {
+    setHoveredIndexes(prev => prev.map((v, i) => i === index ? true : v));
+  };
+
+  const handleMouseLeave = (index: number) => {
+    setHoveredIndexes(prev => prev.map((v, i) => i === index ? false : v));
+  };
+
   return (
-    <motion.div style={{ y, opacity }} className="absolute z-10">
-      <motion.div style={{ scale }} className="h-[600px] w-[300px] bg-white origin-center overflow-hidden rounded-lg">
+    <motion.div style={{ y, opacity }} className="absolute z-[200]">
+      <motion.div style={{ scale }} className="h-[600px] w-[300px] bg-red-500 origin-center overflow-hidden rounded-lg border-4 border-blue-500">
         <motion.div
           className="p-4"
           style={enableInnerScroll ? { y: -innerScroll } : { y: contentY }}
@@ -47,14 +58,14 @@ const AnimatedRectangle = ({ y, scale, opacity, contentY, enableInnerScroll = fa
                 // img_6: row-span-2으로 세로 직사각형 (1px 더 짧게)
                 const baseUrl = `/img_${index + 1}-1.png`;
                 const hoverUrl = `/img_${index + 1}-2.png`;
-                const [isHovered, setIsHovered] = useState(false);
+                const isHovered = hoveredIndexes[index];
                 return (
                   <div
                     key={index}
                     className="relative row-span-2 aspect-[1/2.34]"
                     style={{ pointerEvents: 'auto', zIndex: 50 }}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
+                    onMouseEnter={() => handleMouseEnter(index)}
+                    onMouseLeave={() => handleMouseLeave(index)}
                   >
                     <img
                       src={baseUrl}
@@ -75,14 +86,14 @@ const AnimatedRectangle = ({ y, scale, opacity, contentY, enableInnerScroll = fa
                 // img_7: col-span-2로 가로 직사각형
                 const baseUrl = `/img_${index + 1}-1.png`;
                 const hoverUrl = `/img_${index + 1}-2.png`;
-                const [isHovered, setIsHovered] = useState(false);
+                const isHovered = hoveredIndexes[index];
                 return (
                   <div
                     key={index}
                     className="relative col-span-2 aspect-[2/1]"
                     style={{ pointerEvents: 'auto', zIndex: 50 }}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
+                    onMouseEnter={() => handleMouseEnter(index)}
+                    onMouseLeave={() => handleMouseLeave(index)}
                   >
                     <img
                       src={baseUrl}
@@ -102,14 +113,14 @@ const AnimatedRectangle = ({ y, scale, opacity, contentY, enableInnerScroll = fa
               // 나머지는 기존대로
               const baseUrl = `/img_${index + 1}-1.png`;
               const hoverUrl = `/img_${index + 1}-2.png`;
-              const [isHovered, setIsHovered] = useState(false);
+              const isHovered = hoveredIndexes[index];
               return (
                 <div
                   key={index}
                   className="aspect-square relative"
                   style={{ pointerEvents: 'auto', zIndex: 50 }}
-                  onMouseEnter={() => setIsHovered(true)}
-                  onMouseLeave={() => setIsHovered(false)}
+                  onMouseEnter={() => handleMouseEnter(index)}
+                  onMouseLeave={() => handleMouseLeave(index)}
                 >
                   <img
                     src={baseUrl}
@@ -133,14 +144,14 @@ const AnimatedRectangle = ({ y, scale, opacity, contentY, enableInnerScroll = fa
               const index = idx + 7;
               const baseUrl = `/img_${index + 1}-1.png`;
               const hoverUrl = `/img_${index + 1}-2.png`;
-              const [isHovered, setIsHovered] = useState(false);
+              const isHovered = hoveredIndexes[index];
               return (
                 <div
                   key={index}
                   className="relative aspect-[3/2]"
                   style={{ pointerEvents: 'auto', zIndex: 50 }}
-                  onMouseEnter={() => setIsHovered(true)}
-                  onMouseLeave={() => setIsHovered(false)}
+                  onMouseEnter={() => handleMouseEnter(index)}
+                  onMouseLeave={() => handleMouseLeave(index)}
                 >
                   <img
                     src={baseUrl}
@@ -164,7 +175,7 @@ const AnimatedRectangle = ({ y, scale, opacity, contentY, enableInnerScroll = fa
               const index = idx + 9;
               const baseUrl = `/img_${index + 1}-1.png`;
               const hoverUrl = `/img_${index + 1}-2.png`;
-              const [isHovered, setIsHovered] = useState(false);
+              const isHovered = hoveredIndexes[index];
               if (index === 9) {
                 // img_10-1: 왼쪽 위 크게 (2x2)
                 return (
@@ -172,8 +183,8 @@ const AnimatedRectangle = ({ y, scale, opacity, contentY, enableInnerScroll = fa
                     key={index}
                     className="relative col-span-2 row-span-2 aspect-square col-start-1 row-start-1"
                     style={{ pointerEvents: 'auto', zIndex: 50 }}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
+                    onMouseEnter={() => handleMouseEnter(index)}
+                    onMouseLeave={() => handleMouseLeave(index)}
                   >
                     <img
                       src={baseUrl}
@@ -213,8 +224,8 @@ const AnimatedRectangle = ({ y, scale, opacity, contentY, enableInnerScroll = fa
                     key={index}
                     className="aspect-square relative col-start-3 row-start-2"
                     style={{ pointerEvents: 'auto', zIndex: 50 }}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
+                    onMouseEnter={() => handleMouseEnter(index)}
+                    onMouseLeave={() => handleMouseLeave(index)}
                   >
                     <img
                       src={baseUrl}
@@ -238,8 +249,8 @@ const AnimatedRectangle = ({ y, scale, opacity, contentY, enableInnerScroll = fa
                     key={index}
                     className="aspect-square relative col-start-1 row-start-3"
                     style={{ pointerEvents: 'auto', zIndex: 50 }}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
+                    onMouseEnter={() => handleMouseEnter(index)}
+                    onMouseLeave={() => handleMouseLeave(index)}
                   >
                     <img
                       src={baseUrl}
@@ -263,8 +274,6 @@ const AnimatedRectangle = ({ y, scale, opacity, contentY, enableInnerScroll = fa
                     key={index}
                     className="aspect-square relative col-start-1 row-start-4"
                     style={{ pointerEvents: 'auto', zIndex: 50 }}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
                   >
                     <img
                       src="/img_14-1.gif"
@@ -281,8 +290,8 @@ const AnimatedRectangle = ({ y, scale, opacity, contentY, enableInnerScroll = fa
                     key={index}
                     className="relative col-span-2 row-span-2 aspect-square col-start-2 row-start-3"
                     style={{ pointerEvents: 'auto', zIndex: 50 }}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
+                    onMouseEnter={() => handleMouseEnter(index)}
+                    onMouseLeave={() => handleMouseLeave(index)}
                   >
                     <img
                       src={baseUrl}
@@ -322,8 +331,8 @@ const AnimatedRectangle = ({ y, scale, opacity, contentY, enableInnerScroll = fa
                     key={index}
                     className="relative col-span-2 aspect-[2/1]"
                     style={{ pointerEvents: 'auto', zIndex: 50 }}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
+                    onMouseEnter={() => handleMouseEnter(index)}
+                    onMouseLeave={() => handleMouseLeave(index)}
                   >
                     <img
                       src={baseUrl}
@@ -347,8 +356,8 @@ const AnimatedRectangle = ({ y, scale, opacity, contentY, enableInnerScroll = fa
                     key={index}
                     className="relative col-span-2 aspect-[2/1]"
                     style={{ pointerEvents: 'auto', zIndex: 50 }}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
+                    onMouseEnter={() => handleMouseEnter(index)}
+                    onMouseLeave={() => handleMouseLeave(index)}
                   >
                     <img
                       src={baseUrl}
@@ -372,8 +381,8 @@ const AnimatedRectangle = ({ y, scale, opacity, contentY, enableInnerScroll = fa
                     key={index}
                     className="relative col-span-2 row-span-2 aspect-square col-start-1 row-start-5"
                     style={{ pointerEvents: 'auto', zIndex: 50 }}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
+                    onMouseEnter={() => handleMouseEnter(index)}
+                    onMouseLeave={() => handleMouseLeave(index)}
                   >
                     <img
                       src={baseUrl}
@@ -397,8 +406,8 @@ const AnimatedRectangle = ({ y, scale, opacity, contentY, enableInnerScroll = fa
                     key={index}
                     className="aspect-square relative col-start-3 row-start-5"
                     style={{ pointerEvents: 'auto', zIndex: 50 }}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
+                    onMouseEnter={() => handleMouseEnter(index)}
+                    onMouseLeave={() => handleMouseLeave(index)}
                   >
                     <img
                       src={baseUrl}
@@ -422,8 +431,8 @@ const AnimatedRectangle = ({ y, scale, opacity, contentY, enableInnerScroll = fa
                     key={index}
                     className="aspect-square relative col-start-3 row-start-6"
                     style={{ pointerEvents: 'auto', zIndex: 50 }}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
+                    onMouseEnter={() => handleMouseEnter(index)}
+                    onMouseLeave={() => handleMouseLeave(index)}
                   >
                     <img
                       src={baseUrl}
@@ -445,8 +454,8 @@ const AnimatedRectangle = ({ y, scale, opacity, contentY, enableInnerScroll = fa
                   key={index}
                   className="aspect-square relative"
                   style={{ pointerEvents: 'auto', zIndex: 50 }}
-                  onMouseEnter={() => setIsHovered(true)}
-                  onMouseLeave={() => setIsHovered(false)}
+                  onMouseEnter={() => handleMouseEnter(index)}
+                  onMouseLeave={() => handleMouseLeave(index)}
                 >
                   <img
                     src={baseUrl}
@@ -470,14 +479,14 @@ const AnimatedRectangle = ({ y, scale, opacity, contentY, enableInnerScroll = fa
               const index = idx + 28;
               const baseUrl = `/img_${index + 1}-1.png`;
               const hoverUrl = `/img_${index + 1}-2.png`;
-              const [isHovered, setIsHovered] = useState(false);
+              const isHovered = hoveredIndexes[index];
               return (
                 <div
                   key={index}
                   className="relative aspect-[3/2]"
                   style={{ pointerEvents: 'auto', zIndex: 50 }}
-                  onMouseEnter={() => setIsHovered(true)}
-                  onMouseLeave={() => setIsHovered(false)}
+                  onMouseEnter={() => handleMouseEnter(index)}
+                  onMouseLeave={() => handleMouseLeave(index)}
                 >
                   <img
                     src={baseUrl}
