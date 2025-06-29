@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useLayoutEffect, useEffect, useState } from "react";
+import { useRef, useLayoutEffect, useEffect } from "react";
 import { motion, MotionValue, AnimatePresence } from "framer-motion";
 
 interface Message {
@@ -40,44 +40,18 @@ interface ChatLogProps {
   opacity: MotionValue<number>;
   contentY: MotionValue<any>;
   onHeightReady: (height: number) => void;
+  progress: MotionValue<number>;
 }
 
-const MESSAGE_DELAY = 1200; // ms
-
-const ChatLog = ({ y, opacity, contentY, onHeightReady }: ChatLogProps) => {
+const ChatLog = ({ y, opacity, contentY, onHeightReady, progress }: ChatLogProps) => {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
-  const [visibleCount, setVisibleCount] = useState(0);
-  const [started, setStarted] = useState(false);
 
-  // IntersectionObserver: 중앙에 오면 started=true
-  useEffect(() => {
-    const el = rootRef.current;
-    if (!el) return;
-    const handle = (entries: IntersectionObserverEntry[]) => {
-      const entry = entries[0];
-      if (entry.isIntersecting) setStarted(true);
-    };
-    const observer = new window.IntersectionObserver(handle, {
-      root: null,
-      threshold: 0.6, // 60% 이상 보이면
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  // Sequentially show messages (only after started)
-  useEffect(() => {
-    if (!started) return;
-    if (visibleCount < messages.length) {
-      const timer = setTimeout(() => {
-        setVisibleCount((c) => c + 1);
-      }, MESSAGE_DELAY);
-      return () => clearTimeout(timer);
-    }
-  }, [visibleCount, started]);
-
+  // visibleCount는 chatProgress가 START_PROGRESS 이상일 때부터 등장
+  const START_PROGRESS = 0.2; // 중앙에 오기 시작하는 chatProgress 값
+  const effectiveProgress = Math.max(0, (progress.get() - START_PROGRESS) / (1 - START_PROGRESS));
+  const visibleCount = Math.max(0, Math.floor(effectiveProgress * messages.length));
   // Auto-scroll to bottom when new message appears
   useEffect(() => {
     if (viewportRef.current) {
@@ -116,7 +90,7 @@ const ChatLog = ({ y, opacity, contentY, onHeightReady }: ChatLogProps) => {
         >
           <motion.div ref={messagesContainerRef} style={{ y: contentY }} className="flex flex-col space-y-10 h-full justify-end pb-8">
             <AnimatePresence initial={false}>
-              {started && visibleMessages.map((msg) => {
+              {visibleMessages.map((msg) => {
                 const isUser = msg.sender === "user";
                 const isSystem = msg.sender === "system";
                 const bubble = (

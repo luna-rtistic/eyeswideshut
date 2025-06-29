@@ -7,6 +7,7 @@ import ColorImage from "./ColorImage";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import ScrollVideoBackground from "@/components/ScrollVideoBackground";
+import { MotionValue } from "framer-motion";
 
 const MandalaVideo = dynamic(() => import("./MandalaVideo"), { ssr: false });
 const ChatLog = dynamic(() => import("./ChatLog"), { ssr: false });
@@ -37,6 +38,15 @@ interface MouseTrail {
 const imageUrls = [
   "/img_1-1.gif", "/img_2-1.png", "/img_3-1.png", "/img_4-1.png", "/img_5-1.png", "/img_6-1.png", "/img_7-1.png", "/img_8-1.png", "/img_9-1.png", "/img_10-1.png", "/img_11-1.gif", "/img_12-1.png", "/img_13-1.png", "/img_14-1.gif", "/img_15-1.png", "/img_16-1.png", "/img_17-1.png", "/img_18-1.gif", "/img_19-1.png", "/img_20-1.png", "/img_21-1.png", "/img_22-1.png", "/img_23-1.png", "/img_24-1.png", "/img_25-1.png", "/img_26-1.png", "/img_27-1.png", "/img_28-1.png", "/img_29-1.png", "/img_30-1.png"
 ];
+
+// ChatLogProps에 progress 추가
+interface ChatLogProps {
+  y: MotionValue<any>;
+  opacity: MotionValue<number>;
+  contentY: MotionValue<any>;
+  onHeightReady: (height: number) => void;
+  progress: MotionValue<number>;
+}
 
 export default function ParallaxSection() {
   const parallaxContainerRef = useRef(null);
@@ -145,13 +155,14 @@ export default function ParallaxSection() {
 
   // --- Segment 2: ChatLog ---
   const chatProgress = useTransform(scrollYProgress, [0.25, 0.5], [0, 1]);
-  const chatY = useTransform(chatProgress, [0.0, 0.2, 0.8, 1.0], ["100vh", "0vh", "0vh", "-100vh"]);
-  const chatOpacity = useTransform(chatProgress, [0.0, 0.02, 0.98, 1.0], [0, 1, 1, 0]);
-  const chatContentY = useTransform(chatProgress, [0.2, 0.8], [0, -chatScrollDistance]);
+  // 마지막 메시지가 다 등장한 후(chatProgress=1.0) 퇴장 시작
+  const chatY = useTransform(chatProgress, [0.0, 0.2, 0.92, 1.0], ["100vh", "0vh", "0vh", "-100vh"]);
+  const chatOpacity = useTransform(chatProgress, [0.0, 0.02, 0.92, 1.0], [0, 1, 1, 0]);
+  const chatContentY = useTransform(chatProgress, [0.2, 0.92], [0, -chatScrollDistance]);
 
   // --- Segment 3: Final Sequence ---
   const finalSequenceProgress = useTransform(scrollYProgress, [0.5, 1.0], [0, 1]);
-  const mandalaOpacity = useTransform(finalSequenceProgress, [0.0, 0.1, 0.4, 0.45], [0, 1, 1, 0]);
+  const mandalaOpacity = useTransform(finalSequenceProgress, [0.08, 0.18, 0.4, 0.45], [0, 1, 1, 0]);
   const mandalaBgScale = useTransform(finalSequenceProgress, [0, 1], [2.0, 2.5]);
   const color1Opacity = useTransform(finalSequenceProgress, [0.44, 0.46, 0.55, 0.56], [0, 1, 1, 0]);
   const color2Opacity = useTransform(finalSequenceProgress, [0.46, 0.48, 0.55, 0.56], [0, 1, 1, 0]);
@@ -266,7 +277,7 @@ export default function ParallaxSection() {
       </motion.button>
 
       <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden">
-        <ChatLog y={chatY} opacity={chatOpacity} contentY={chatContentY} onHeightReady={setChatScrollDistance} />
+        <ChatLog y={chatY} opacity={chatOpacity} contentY={chatContentY} onHeightReady={setChatScrollDistance} progress={chatProgress} />
 
         <div className="absolute inset-0 z-20">
           <MandalaVideo opacity={mandalaOpacity} bgScale={mandalaBgScale} />
