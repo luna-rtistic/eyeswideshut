@@ -152,6 +152,7 @@ export default function ParallaxSection() {
   // --- Segment 3: Final Sequence ---
   const finalSequenceProgress = useTransform(scrollYProgress, [0.5, 1.0], [0, 1]);
   const mandalaOpacity = useTransform(finalSequenceProgress, [0.0, 0.1, 0.4, 0.45], [0, 1, 1, 0]);
+  const mandalaBgScale = useTransform(finalSequenceProgress, [0, 1], [2.0, 2.5]);
   const color1Opacity = useTransform(finalSequenceProgress, [0.44, 0.46, 0.55, 0.56], [0, 1, 1, 0]);
   const color2Opacity = useTransform(finalSequenceProgress, [0.46, 0.48, 0.55, 0.56], [0, 1, 1, 0]);
   const color3Opacity = useTransform(finalSequenceProgress, [0.48, 0.50, 0.55, 0.56], [0, 1, 1, 0]);
@@ -268,7 +269,7 @@ export default function ParallaxSection() {
         <ChatLog y={chatY} opacity={chatOpacity} contentY={chatContentY} onHeightReady={setChatScrollDistance} />
 
         <div className="absolute inset-0 z-20">
-          <MandalaVideo opacity={mandalaOpacity} />
+          <MandalaVideo opacity={mandalaOpacity} bgScale={mandalaBgScale} />
           <div className="absolute inset-0 z-30 pointer-events-none">
             <ColorImage opacity={color1Opacity} src="/color_1.png" />
             <ColorImage opacity={color2Opacity} src="/color_2.png" />
