@@ -23,8 +23,8 @@ export default function ParallaxImages({ progress }: { progress: number }) {
         // 격자 분포
         const col = i % cols;
         const row = Math.floor(i / cols);
-        // x/y를 격자에 랜덤 오프셋 추가
-        const x = 2 + col * (96 - size) / (cols - 1) + Math.random() * 2;
+        // x를 랜덤 오프셋 추가
+        const x = Math.random() * 96;
         const yStart = 90 + row * 8 + Math.random() * 4;
         const yEnd = -400 - Math.random() * 200;
         return {
@@ -49,7 +49,6 @@ export default function ParallaxImages({ progress }: { progress: number }) {
         const y = progress < img.delay ? img.yStart : img.yStart + (img.yEnd - img.yStart) * localProgress;
         let opacity = 1;
         if (progress < img.delay) opacity = 0;
-        else if (localProgress < 0.1) opacity = localProgress / 0.1;
         else if (localProgress > 0.9) opacity = 1 - Math.min(1, (localProgress - 0.9) / 0.1);
         else opacity = 1;
         if (opacity <= 0) return null;
