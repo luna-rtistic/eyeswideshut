@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useLayoutEffect } from "react";
-import { motion, MotionValue } from "framer-motion";
+import { useRef, useLayoutEffect, useEffect, useState } from "react";
+import { motion, MotionValue, AnimatePresence } from "framer-motion";
 
 interface Message {
   id: number;
@@ -42,9 +42,48 @@ interface ChatLogProps {
   onHeightReady: (height: number) => void;
 }
 
+const MESSAGE_DELAY = 1200; // ms
+
 const ChatLog = ({ y, opacity, contentY, onHeightReady }: ChatLogProps) => {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [visibleCount, setVisibleCount] = useState(0);
+  const [started, setStarted] = useState(false);
+
+  // IntersectionObserver: 중앙에 오면 started=true
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    const handle = (entries: IntersectionObserverEntry[]) => {
+      const entry = entries[0];
+      if (entry.isIntersecting) setStarted(true);
+    };
+    const observer = new window.IntersectionObserver(handle, {
+      root: null,
+      threshold: 0.6, // 60% 이상 보이면
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Sequentially show messages (only after started)
+  useEffect(() => {
+    if (!started) return;
+    if (visibleCount < messages.length) {
+      const timer = setTimeout(() => {
+        setVisibleCount((c) => c + 1);
+      }, MESSAGE_DELAY);
+      return () => clearTimeout(timer);
+    }
+  }, [visibleCount, started]);
+
+  // Auto-scroll to bottom when new message appears
+  useEffect(() => {
+    if (viewportRef.current) {
+      viewportRef.current.scrollTop = viewportRef.current.scrollHeight;
+    }
+  }, [visibleCount]);
 
   useLayoutEffect(() => {
     if (messagesContainerRef.current && viewportRef.current) {
@@ -55,8 +94,10 @@ const ChatLog = ({ y, opacity, contentY, onHeightReady }: ChatLogProps) => {
     }
   }, [onHeightReady]);
 
+  const visibleMessages = messages.slice(0, visibleCount);
+
   return (
-    <motion.div style={{ y, opacity }} className="absolute">
+    <motion.div ref={rootRef} style={{ y, opacity }} className="absolute">
       <div className="w-[1000px] h-[90vh] bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-4 font-mono text-xl text-green-400 flex flex-col overflow-hidden border border-green-500/20">
         <div className="flex-shrink-0 p-2 bg-gray-800/50 flex items-center rounded-t-lg">
           <div className="flex space-x-2">
@@ -73,75 +114,76 @@ const ChatLog = ({ y, opacity, contentY, onHeightReady }: ChatLogProps) => {
             maskImage: "linear-gradient(to bottom, black 95%, transparent 100%)",
           }}
         >
-          <motion.div ref={messagesContainerRef} style={{ y: contentY }} className="flex flex-col space-y-10">
-            {messages.map((msg) => {
-              const isUser = msg.sender === "user";
-              const isSystem = msg.sender === "system";
-
-              const bubble = (
-                <div
-                  className={
-                    isSystem
-                      ? "font-mono text-gray-400 text-base italic tracking-tight"
-                      : `max-w-full rounded-2xl px-6 py-3 font-mono text-lg tracking-tight ${
-                          isUser
-                            ? "text-black rounded-br-none"
-                            : "bg-gradient-to-br from-white via-gray-50 to-gray-100 text-black rounded-bl-none"
-                        }`
-                  }
-                  style={{
-                    boxShadow: isSystem 
-                      ? 'none'
-                      : isUser 
-                        ? '0 0 8px rgba(51, 255, 0, 0.3)' 
-                        : '0 0 8px rgba(255, 255, 255, 0.2)',
-                    background: isUser 
-                      ? 'linear-gradient(to bottom right, #33FF00, #2ECC71, #33FF00)' 
-                      : undefined
-                  }}
-                >
-                  {msg.text}
-                </div>
-              );
-
-              const timestamp = msg.time && (
-                <span className="text-xs text-gray-500 self-end mx-3">
-                  {msg.time}
-                </span>
-              );
-
-              if (isSystem) {
+          <motion.div ref={messagesContainerRef} style={{ y: contentY }} className="flex flex-col space-y-10 h-full justify-end pb-8">
+            <AnimatePresence initial={false}>
+              {started && visibleMessages.map((msg) => {
+                const isUser = msg.sender === "user";
+                const isSystem = msg.sender === "system";
+                const bubble = (
+                  <motion.div
+                    key={msg.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className={
+                      isSystem
+                        ? "font-mono text-gray-400 text-base italic tracking-tight"
+                        : `max-w-full rounded-2xl px-6 py-3 font-mono text-lg tracking-tight ${
+                            isUser
+                              ? "text-black rounded-br-none"
+                              : "bg-white text-black rounded-bl-none"
+                          }`
+                    }
+                    style={{
+                      boxShadow: isSystem
+                        ? "none"
+                        : isUser
+                        ? "0 0 8px rgba(51, 255, 0, 0.3)"
+                        : "0 0 8px rgba(0,0,0,0.06)",
+                      background: isUser
+                        ? "linear-gradient(to bottom right, #33FF00, #2ECC71, #33FF00)"
+                        : undefined,
+                    }}
+                  >
+                    {msg.text}
+                  </motion.div>
+                );
+                const timestamp =
+                  msg.time && (
+                    <span className="text-xs text-gray-500 self-end mx-3">{msg.time}</span>
+                  );
+                if (isSystem) {
+                  return (
+                    <div key={msg.id} className="flex w-full justify-center">
+                      {bubble}
+                    </div>
+                  );
+                }
                 return (
-                  <div key={msg.id} className="flex w-full justify-center">
-                    {bubble}
+                  <div
+                    key={msg.id}
+                    className={`flex items-end max-w-[65%] ${
+                      isUser ? "self-end justify-end" : "self-start justify-start"
+                    }`}
+                  >
+                    {isUser ? (
+                      <>
+                        {timestamp}
+                        {bubble}
+                      </>
+                    ) : (
+                      <>
+                        {bubble}
+                        {timestamp}
+                      </>
+                    )}
                   </div>
-                )
-              }
-
-              return (
-                <div
-                  key={msg.id}
-                  className={`flex items-end max-w-[65%] ${
-                    isUser ? "self-end justify-end" : "self-start justify-start"
-                  }`}
-                >
-                  {isUser ? (
-                    <>
-                      {timestamp}
-                      {bubble}
-                    </>
-                  ) : (
-                    <>
-                      {bubble}
-                      {timestamp}
-                    </>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })}
+            </AnimatePresence>
           </motion.div>
         </div>
-
         {/* Chat Input Footer */}
         <div className="flex-shrink-0 p-3 border-t border-gray-700/50 flex items-center space-x-3 bg-black/50">
           <input
