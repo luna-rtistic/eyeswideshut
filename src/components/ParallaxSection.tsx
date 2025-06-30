@@ -165,9 +165,30 @@ export default function ParallaxSection() {
   // --- Segment 2: ChatLog ---
   const chatProgress = useTransform(scrollYProgress, [0.25, 0.5], [0, 1]);
   // 마지막 메시지가 다 등장한 후(chatProgress=1.0) 퇴장 시작
-  const chatY = useTransform(chatProgress, [0.0, 0.2, 0.92, 1.0], ["100vh", "0vh", "0vh", "-100vh"]);
-  const chatOpacity = useTransform(chatProgress, [0.0, 0.02, 0.92, 1.0], [0, 1, 1, 0]);
+  // chatProgress 1.0까지는 y=0vh(고정), 1.0~1.1 구간에서 y=0vh→-100vh로 이동
+  const chatY = useTransform(chatProgress, [0.0, 1.0, 1.1], ["0vh", "0vh", "-100vh"]);
+  const chatOpacity = useTransform(chatProgress, [0.0, 0.02, 1.0, 1.1], [0, 1, 1, 0]);
   const chatContentY = useTransform(chatProgress, [0.2, 0.92], [0, -chatScrollDistance]);
+
+  // ChatLog 완전 unmount를 위한 상태
+  const [showChatLog, setShowChatLog] = useState(true);
+  useEffect(() => {
+    const unsubscribe = chatProgress.on("change", (v) => {
+      if (v > 1.1) setShowChatLog(false);
+    });
+    return () => unsubscribe();
+  }, [chatProgress]);
+
+  // --- Segment 2.5: ParallaxImages 등장 구간 ---
+  // 채팅이 모두 등장한 뒤에만 ParallaxImages가 움직이도록
+  const imagesStart = 0.5; // 채팅 끝난 직후
+  const imagesEnd = 0.6;   // 이미지 모두 사라지는 시점 (원하는 타이밍에 맞게 조정)
+  const imagesAppearProgress = useTransform(
+    scrollYProgress,
+    [imagesStart, imagesEnd],
+    [0, 1]
+  );
+  const imagesProgress = chatProgress.get() < 1 ? 0 : imagesAppearProgress.get();
 
   // --- Segment 3: Final Sequence ---
   const finalSequenceProgress = useTransform(scrollYProgress, [0.5, 1.0], [0, 1]);
@@ -215,8 +236,12 @@ export default function ParallaxSection() {
 
   const baseImageOpacity = useTransform(finalSequenceProgress, [0.48, 0.50], [0, 0]);
 
-  // 커스텀 훅: motion value를 React state처럼 subscribe
-  const finalProgress = useMotionValueValue(finalSequenceProgress);
+  // finalSequenceProgress를 React state로 동기화
+  const [finalProgress, setFinalProgress] = useState(0);
+  useEffect(() => {
+    const unsubscribe = finalSequenceProgress.on("change", setFinalProgress);
+    return () => unsubscribe();
+  }, [finalSequenceProgress]);
 
   return (
     <div ref={parallaxContainerRef} className="relative h-[5000vh]">
@@ -278,7 +303,11 @@ export default function ParallaxSection() {
       </motion.div>
 
       <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden">
-        <ChatLog y={chatY} opacity={chatOpacity} contentY={chatContentY} onHeightReady={setChatScrollDistance} progress={chatProgress} />
+        <AnimatePresence>
+          {finalProgress < 0.01 && (
+            <ChatLog y={chatY} opacity={chatOpacity} contentY={chatContentY} onHeightReady={setChatScrollDistance} progress={chatProgress} />
+          )}
+        </AnimatePresence>
 
         {/* AnimatedRectangle Grid Container */}
         <AnimatedRectangle 
