@@ -71,7 +71,13 @@ const ChatLog = ({ y, opacity, contentY, onHeightReady, progress }: ChatLogProps
   const visibleMessages = messages.slice(0, visibleCount);
 
   return (
-    <motion.div ref={rootRef} style={{ y, opacity }} className="absolute">
+    <motion.div
+      ref={rootRef}
+      style={{ y, opacity }}
+      className="absolute"
+      exit={{ y: '-100vh', opacity: 0 }}
+      transition={{ duration: 0.7, ease: 'easeInOut' }}
+    >
       <div className="w-[1000px] h-[90vh] bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-4 font-mono text-xl text-green-400 flex flex-col overflow-hidden border border-green-500/20">
         <div className="flex-shrink-0 p-2 bg-gray-800/50 flex items-center rounded-t-lg">
           <div className="flex space-x-2">

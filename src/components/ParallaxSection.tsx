@@ -164,17 +164,27 @@ export default function ParallaxSection() {
 
   // --- Segment 2: ChatLog ---
   const chatProgress = useTransform(scrollYProgress, [0.25, 0.5], [0, 1]);
-  // 마지막 메시지가 다 등장한 후(chatProgress=1.0) 퇴장 시작
-  // chatProgress 1.0까지는 y=0vh(고정), 1.0~1.1 구간에서 y=0vh→-100vh로 이동
-  const chatY = useTransform(chatProgress, [0.0, 1.0, 1.1], ["0vh", "0vh", "-100vh"]);
-  const chatOpacity = useTransform(chatProgress, [0.0, 0.02, 1.0, 1.1], [0, 1, 1, 0]);
+  // 마지막 메시지가 다 등장한 후(chatProgress=1.0) 1.2초(스크롤 구간) 대기 후 퇴장 시작
+  // chatProgress 1.0까지는 y=0vh(고정), 1.0~1.12 구간에서 대기, 1.12~1.22 구간에서 y=0vh→-100vh로 이동
+  const chatExitDelay = 0.12; // 0.12 구간 대기 (스크롤 기준)
+  const chatExitDuration = 0.1; // 0.1 구간 동안 퇴장 애니메이션
+  const chatY = useTransform(
+    chatProgress,
+    [0.0, 1.0, 1.0 + chatExitDelay, 1.0 + chatExitDelay + chatExitDuration],
+    ["0vh", "0vh", "0vh", "-100vh"]
+  );
+  const chatOpacity = useTransform(
+    chatProgress,
+    [0.0, 0.02, 1.0, 1.0 + chatExitDelay, 1.0 + chatExitDelay + chatExitDuration],
+    [0, 1, 1, 1, 0]
+  );
   const chatContentY = useTransform(chatProgress, [0.2, 0.92], [0, -chatScrollDistance]);
 
   // ChatLog 완전 unmount를 위한 상태
   const [showChatLog, setShowChatLog] = useState(true);
   useEffect(() => {
     const unsubscribe = chatProgress.on("change", (v) => {
-      if (v > 1.1) setShowChatLog(false);
+      if (v > 1.0 + chatExitDelay + chatExitDuration) setShowChatLog(false);
     });
     return () => unsubscribe();
   }, [chatProgress]);
@@ -304,8 +314,15 @@ export default function ParallaxSection() {
 
       <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden">
         <AnimatePresence>
-          {finalProgress < 0.01 && (
-            <ChatLog y={chatY} opacity={chatOpacity} contentY={chatContentY} onHeightReady={setChatScrollDistance} progress={chatProgress} />
+          {finalProgress < 0.01 && showChatLog && (
+            <ChatLog
+              key="chatlog"
+              y={chatY}
+              opacity={chatOpacity}
+              contentY={chatContentY}
+              onHeightReady={setChatScrollDistance}
+              progress={chatProgress}
+            />
           )}
         </AnimatePresence>
 
