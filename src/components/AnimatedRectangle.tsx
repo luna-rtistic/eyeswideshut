@@ -30,7 +30,7 @@ const AnimatedRectangle = ({ y, scale, opacity, contentY, enableInnerScroll = fa
 
   return (
     <motion.div style={{ y, opacity }} className="absolute z-[200]">
-      <motion.div style={{ scale }} className="h-[600px] w-[300px] bg-red-500 origin-center overflow-hidden rounded-lg border-4 border-blue-500">
+      <motion.div style={{ scale }} className="h-[600px] w-[300px] origin-center overflow-hidden rounded-lg backdrop-blur-md bg-white/20 border border-white/30 shadow-lg">
         <motion.div
           className="p-4"
           style={enableInnerScroll ? { y: -innerScroll } : { y: contentY }}

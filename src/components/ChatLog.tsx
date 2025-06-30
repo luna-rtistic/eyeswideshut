@@ -103,7 +103,7 @@ const ChatLog = ({ y, opacity, contentY, onHeightReady, progress }: ChatLogProps
                     className={
                       isSystem
                         ? "font-mono text-gray-400 text-base italic tracking-tight"
-                        : `max-w-full rounded-2xl px-6 py-3 font-mono text-lg tracking-tight ${
+                        : `max-w-full rounded-2xl px-6 py-3 font-mono text-base tracking-tight ${
                             isUser
                               ? "text-black rounded-br-none"
                               : "bg-white text-black rounded-bl-none"
@@ -166,8 +166,11 @@ const ChatLog = ({ y, opacity, contentY, onHeightReady, progress }: ChatLogProps
             className="flex-grow bg-gray-900/70 rounded-md px-4 py-2 text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500/50 border border-transparent focus:border-green-500/50 transition-all text-sm font-light"
             disabled
           />
-          <button className="bg-green-600 text-white font-bold px-6 py-2 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50" disabled>
-            Send
+          <button className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center" disabled>
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M11 18V4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/>
+              <path d="M6.5 8.5L11 4L15.5 8.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </button>
         </div>
       </div>

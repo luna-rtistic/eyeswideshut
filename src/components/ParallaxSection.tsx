@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect, useMemo } from "react";
+import { useRef, useState, useEffect, useMemo, useSyncExternalStore } from "react";
 import { useScroll, useTransform, motion, AnimatePresence } from "framer-motion";
 import AnimatedRectangle from "@/components/AnimatedRectangle";
 import ColorImage from "./ColorImage";
@@ -46,6 +46,15 @@ interface ChatLogProps {
   contentY: MotionValue<any>;
   onHeightReady: (height: number) => void;
   progress: MotionValue<number>;
+}
+
+// 커스텀 훅: motion value를 React state처럼 subscribe
+function useMotionValueValue(motionValue: MotionValue<any>) {
+  return useSyncExternalStore(
+    (cb) => motionValue.on("change", cb),
+    () => motionValue.get(),
+    () => 0 // SSR에서 안전하게 0 반환
+  );
 }
 
 export default function ParallaxSection() {
@@ -133,7 +142,7 @@ export default function ParallaxSection() {
   // --- Segment 1: Rectangle ---
   const rectangleY = useTransform(scrollYProgress, [0.005, 0.04, 0.06, 0.25, 0.27], ["100vh", "0vh", "0vh", "0vh", "-100vh"]);
   const rectangleScale = useTransform(scrollYProgress, [0.04, 0.06, 0.25], [1, 1.2, 1.2]);
-  const rectangleOpacity = useTransform(scrollYProgress, [0.005, 0.01, 0.269, 0.27], [1, 1, 1, 0]);
+  const rectangleOpacity = useTransform(scrollYProgress, [0.005, 0.01, 0.22, 0.23], [1, 1, 1, 0]);
   const rectangleContentY = useTransform(rectangleProgress, [0.4, 0.8], ["0%", "-60%"]);
   
   // 애니메이션 진행률을 0-100으로 변환
@@ -169,6 +178,11 @@ export default function ParallaxSection() {
   const color3Opacity = useTransform(finalSequenceProgress, [0.48, 0.50, 0.55, 0.56], [0, 1, 1, 0]);
   const color4Opacity = useTransform(finalSequenceProgress, [0.50, 0.52, 0.55, 0.56], [0, 1, 1, 0]);
   
+  // Color 4 splits into 6 pieces
+  const color4SplitProgress = useTransform(finalSequenceProgress, [0.52, 0.54, 0.56, 0.58], [0, 1, 1, 0]);
+  const color4SplitScale = useTransform(finalSequenceProgress, [0.52, 0.54], [1, 1.5]);
+  const color4SplitRotate = useTransform(finalSequenceProgress, [0.52, 0.54], [0, 360]);
+  
   const gridContainerOpacity = useTransform(finalSequenceProgress, [0.54, 0.56, 0.88, 0.90], [0, 1, 1, 0]);
   const gridProgress = useTransform(finalSequenceProgress, [0.56, 0.60], [0.1, 0.9]);
   
@@ -200,6 +214,9 @@ export default function ParallaxSection() {
   const glitchTextOpacity = useTransform(finalSequenceProgress, [0.985, 0.995], [0, 1]);
 
   const baseImageOpacity = useTransform(finalSequenceProgress, [0.48, 0.50], [0, 0]);
+
+  // 커스텀 훅: motion value를 React state처럼 subscribe
+  const finalProgress = useMotionValueValue(finalSequenceProgress);
 
   return (
     <div ref={parallaxContainerRef} className="relative h-[5000vh]">
@@ -260,26 +277,23 @@ export default function ParallaxSection() {
         </motion.div>
       </motion.div>
 
-      {/* Start Over Button */}
-      <motion.button
-        className="fixed z-50 text-white font-mono text-sm hover:text-gray-300 transition-colors duration-300"
-        style={{ bottom: 'calc(1rem + 50px)', right: 'calc(1rem + 50px)' }}
-        onClick={() => {
-          window.scrollTo(0, 0);
-          window.location.reload();
-        }}
-        animate={{ opacity: [0.3, 1, 0.3] }}
-        transition={{ duration: 2, repeat: Infinity, repeatType: "loop" }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        ▴ start over
-      </motion.button>
-
       <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden">
         <ChatLog y={chatY} opacity={chatOpacity} contentY={chatContentY} onHeightReady={setChatScrollDistance} progress={chatProgress} />
 
-        <div className="absolute inset-0 z-20">
+        {/* AnimatedRectangle Grid Container */}
+        <AnimatedRectangle 
+          y={rectangleY} 
+          scale={rectangleScale} 
+          opacity={rectangleOpacity} 
+          contentY={rectangleContentY}
+          enableInnerScroll={enableInnerScroll}
+          innerScroll={innerScroll}
+        />
+
+        <motion.div 
+          className="absolute inset-0 z-20"
+          style={{ filter }}
+        >
           <MandalaVideo opacity={mandalaOpacity} bgScale={mandalaBgScale} />
           <div className="absolute inset-0 z-30 pointer-events-none">
             <ColorImage opacity={color1Opacity} src="/color_1.png" />
@@ -289,240 +303,153 @@ export default function ParallaxSection() {
           </div>
 
           <motion.div 
-            style={{ opacity: gridContainerOpacity }} 
-            className="absolute inset-0 z-40"
+            style={{ opacity: textContainerOpacity }}
+            className="z-30 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
           >
-            <motion.div
-              style={{ opacity: textContainerOpacity }}
-              className="z-30 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-            >
-              <p className="font-mono text-green-500 text-center text-2xl">
-                {characters.map((char, i) => {
-                  const start = i / characters.length;
-                  const end = start + 1 / characters.length;
-                  const opacity = useTransform(textTypingProgress, [start, end], [0.2, 1]);
-                  return (
-                    <motion.span key={`${char}-${i}`} style={{ opacity }}>
-                      {char === " " ? "\u00A0" : char}
-                    </motion.span>
-                  );
-                })}
-              </p>
-            </motion.div>
+            <p className="font-mono text-green-500 text-center text-2xl">
+              {characters.map((char, i) => {
+                const start = i / characters.length;
+                const end = start + 1 / characters.length;
+                const opacity = useTransform(textTypingProgress, [start, end], [0.2, 1]);
+                return (
+                  <motion.span key={`${char}-${i}`} style={{ opacity }}>
+                    {char === " " ? "\u00A0" : char}
+                  </motion.span>
+                );
+              })}
+            </p>
           </motion.div>
+        </motion.div>
 
-          {/* Snack Images that appear after scrolling more */}
-          <motion.div 
-            style={{ opacity: snackImagesOpacity }}
-            className="absolute inset-0 z-50"
-          >
-            {destinations.map((dest, index) => {
-              const x = dest.x;
-              const y = dest.y;
-              const scale = dest.scale;
+        {/* Snack Images that appear after scrolling more - Outside filter */}
+        <motion.div 
+          style={{ opacity: snackImagesOpacity }}
+          className="absolute inset-0 z-50"
+        >
+          {destinations.map((dest, index) => {
+            const x = dest.x;
+            const y = dest.y;
+            const scale = dest.scale;
 
-              return (
-                <motion.div
-                  key={index}
-                  className="absolute w-full h-full flex items-center justify-center"
-                  style={{ 
-                    x: x,
-                    y: y,
-                    scale: scale
-                  }}
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ 
-                    opacity: 1, 
-                    scale: scale,
-                    rotate: 90,
-                    transition: { 
-                      delay: index * 0.1,
-                      duration: 0.5,
-                      ease: "easeOut"
-                    }
-                  }}
-                >
-                  <div className="relative w-[60vmin] aspect-[759/600]">
-                    <motion.div
-                      style={{ opacity: useTransform(snackImageTransition, [0, 0.5], [1, 0]) }}
-                      className="absolute inset-0"
-                    >
-                      <Image
-                        src={`/snack_${index + 1}-1.png`}
-                        alt={`Snack ${index + 1} version 1`}
-                        layout="fill"
-                        objectFit="contain"
-                        style={{ transform: 'scale(1.3)' }}
-                        onClick={() => setSelectedSnackImage(`/snack_${index + 1}-1.png`)}
-                        className="cursor-pointer"
-                      />
-                    </motion.div>
-                    <motion.div
-                      style={{ opacity: useTransform(snackImageTransition, [0.5, 1], [0, 1]) }}
-                      className="absolute inset-0"
-                    >
-                      <Image
-                        src={`/snack_${index + 1}-2.png`}
-                        alt={`Snack ${index + 1} version 2`}
-                        layout="fill"
-                        objectFit="contain"
-                        style={{ transform: 'scale(1.3)' }}
-                        onClick={() => setSelectedSnackImage(`/snack_${index + 1}-2.png`)}
-                        className="cursor-pointer"
-                      />
-                    </motion.div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-
-          {/* Grave Images that fall from sky */}
-          <motion.div 
-            style={{ opacity: graveOpacity }}
-            className="absolute inset-0 z-50"
-          >
-            {destinations.map((dest, index) => {
-              const x = dest.x;
-              const y = dest.y;
-              const scale = dest.scale;
-              const graveYPosition = useTransform(finalSequenceProgress, [0.95, 0.97], ['-100vh', y]);
-
-              return (
-                <motion.div
-                  key={index}
-                  className="absolute w-full h-full flex items-center justify-center"
-                  style={{ 
-                    x: x,
-                    y: graveYPosition,
-                    scale: scale
-                  }}
-                  initial={{ opacity: 0, scale: 0.8, y: '-100vh' }}
-                  animate={{ 
-                    opacity: 1, 
-                    scale: scale,
-                    y: '0vh',
-                    transition: { 
-                      delay: index * 0.5,
-                      duration: 2.5,
-                      ease: [0.25, 0.46, 0.45, 0.94], // Custom easing for heavy feel
-                      scale: {
-                        duration: 2.5,
-                        ease: "easeOut"
-                      }
-                    }
-                  }}
-                >
-                  <div className="relative w-[60vmin] aspect-[759/600]">
-                    <Image
-                      src={`/grave_${index + 1}.png`}
-                      alt={`Grave ${index + 1}`}
-                      layout="fill"
-                      objectFit="contain"
-                      style={{ transform: 'scale(1.3)' }}
-                      className="cursor-pointer"
-                    />
-                  </div>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-
-          {/* Cyber Glitch Text */}
-          <motion.div
-            style={{ opacity: glitchTextOpacity }}
-            className="absolute inset-0 z-[60] flex items-center justify-center"
-          >
-            <div className="text-center">
+            return (
               <motion.div
-                className="font-mono text-4xl md:text-6xl font-light text-white mb-8 relative overflow-hidden"
-                style={{
-                  textShadow: `
-                    0 0 8px rgba(0, 255, 0, 0.4),
-                    0 0 15px rgba(0, 255, 0, 0.3),
-                    1px 1px 0px rgba(255, 0, 255, 0.6),
-                    -1px -1px 0px rgba(0, 255, 255, 0.6)
-                  `,
-                  filter: 'drop-shadow(0 0 8px rgba(0, 255, 0, 0.4))',
-                  letterSpacing: '-0.02em',
-                  lineHeight: '1.2'
+                key={index}
+                className="absolute w-full h-full flex items-center justify-center"
+                style={{ 
+                  x: x,
+                  y: y,
+                  scale: scale
                 }}
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ 
                   opacity: 1, 
-                  scale: 1,
+                  scale: scale,
+                  rotate: 90,
                   transition: { 
-                    duration: 1.0,
+                    delay: index * 0.1,
+                    duration: 0.5,
                     ease: "easeOut"
                   }
                 }}
               >
-                {/* Main Text */}
-                <motion.span
-                  animate={{
-                    textShadow: [
-                      "0 0 8px rgba(0, 255, 0, 0.4), 0 0 15px rgba(0, 255, 0, 0.3), 1px 1px 0px rgba(255, 0, 255, 0.6), -1px -1px 0px rgba(0, 255, 255, 0.6)",
-                      "0 0 8px rgba(0, 255, 255, 0.4), 0 0 15px rgba(0, 255, 255, 0.3), 1px 1px 0px rgba(0, 255, 0, 0.6), -1px -1px 0px rgba(255, 0, 255, 0.6)",
-                      "0 0 8px rgba(255, 0, 255, 0.4), 0 0 15px rgba(255, 0, 255, 0.3), 1px 1px 0px rgba(0, 255, 255, 0.6), -1px -1px 0px rgba(0, 255, 0, 0.6)",
-                      "0 0 8px rgba(0, 255, 0, 0.4), 0 0 15px rgba(0, 255, 0, 0.3), 1px 1px 0px rgba(255, 0, 255, 0.6), -1px -1px 0px rgba(0, 255, 255, 0.6)"
-                    ],
-                    x: [0, 2, -2, 1, -1, 0],
-                    y: [0, 1, -1, 0.5, -0.5, 0]
-                  }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Infinity,
-                    repeatType: "reverse",
-                    x: {
-                      duration: 0.02,
-                      repeat: Infinity,
-                      repeatType: "reverse"
-                    },
-                    y: {
-                      duration: 0.02,
-                      repeat: Infinity,
-                      repeatType: "reverse"
-                    }
-                  }}
-                >
-                  You don't know what you've given
-                </motion.span>
-                
-                {/* Second Line */}
-                <motion.span
-                  className="block mt-4"
-                  animate={{
-                    textShadow: [
-                      "0 0 8px rgba(255, 0, 0, 0.4), 0 0 15px rgba(255, 0, 0, 0.3), 1px 1px 0px rgba(0, 255, 255, 0.6), -1px -1px 0px rgba(255, 0, 255, 0.6)",
-                      "0 0 8px rgba(0, 255, 255, 0.4), 0 0 15px rgba(0, 255, 255, 0.3), 1px 1px 0px rgba(255, 0, 0, 0.6), -1px -1px 0px rgba(0, 255, 0, 0.6)",
-                      "0 0 8px rgba(255, 0, 255, 0.4), 0 0 15px rgba(255, 0, 255, 0.3), 1px 1px 0px rgba(0, 255, 0, 0.6), -1px -1px 0px rgba(255, 0, 0, 0.6)",
-                      "0 0 8px rgba(255, 0, 0, 0.4), 0 0 15px rgba(255, 0, 0, 0.3), 1px 1px 0px rgba(0, 255, 255, 0.6), -1px -1px 0px rgba(255, 0, 255, 0.6)"
-                    ],
-                    x: [0, -2, 2, -1, 1, 0],
-                    y: [0, -1, 1, -0.5, 0.5, 0]
-                  }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Infinity,
-                    repeatType: "reverse",
-                    x: {
-                      duration: 0.025,
-                      repeat: Infinity,
-                      repeatType: "reverse"
-                    },
-                    y: {
-                      duration: 0.025,
-                      repeat: Infinity,
-                      repeatType: "reverse"
-                    }
-                  }}
-                >
-                  but they already know what to take
-                </motion.span>
+                <div className="relative w-[60vmin] aspect-[759/600]">
+                  <motion.div
+                    style={{ opacity: useTransform(snackImageTransition, [0, 0.5], [1, 0]) }}
+                    className="absolute inset-0"
+                  >
+                    <Image
+                      src={`/snack_${index + 1}-1.png`}
+                      alt={`Snack ${index + 1} version 1`}
+                      layout="fill"
+                      objectFit="contain"
+                      style={{ transform: 'scale(1.3)' }}
+                      onClick={() => setSelectedSnackImage(`/snack_${index + 1}-1.png`)}
+                      className="cursor-pointer"
+                    />
+                  </motion.div>
+                  <motion.div
+                    style={{ opacity: useTransform(snackImageTransition, [0.5, 1], [0, 1]) }}
+                    className="absolute inset-0"
+                  >
+                    <Image
+                      src={`/snack_${index + 1}-2.png`}
+                      alt={`Snack ${index + 1} version 2`}
+                      layout="fill"
+                      objectFit="contain"
+                      style={{ transform: 'scale(1.3)' }}
+                      onClick={() => setSelectedSnackImage(`/snack_${index + 1}-2.png`)}
+                      className="cursor-pointer"
+                    />
+                  </motion.div>
+                </div>
               </motion.div>
+            );
+          })}
+        </motion.div>
+
+        {/* Grave Images that fall from sky - Outside filter */}
+        <motion.div 
+          style={{ opacity: graveOpacity }}
+          className="absolute inset-0 z-50"
+        >
+          {destinations.map((dest, index) => {
+            const x = dest.x;
+            const y = dest.y;
+            const scale = dest.scale;
+            const graveYPosition = useTransform(finalSequenceProgress, [0.95, 0.97], ['-100vh', y]);
+
+            return (
+              <motion.div
+                key={index}
+                className="absolute w-full h-full flex items-center justify-center"
+                style={{ 
+                  x: x,
+                  y: graveYPosition,
+                  scale: scale
+                }}
+                initial={{ opacity: 0, scale: 0.8, y: '-100vh' }}
+                animate={{ 
+                  opacity: 1, 
+                  scale: scale,
+                  y: '0vh',
+                  transition: { 
+                    delay: index * 0.5,
+                    duration: 2.5,
+                    ease: [0.25, 0.46, 0.45, 0.94], // Custom easing for heavy feel
+                    scale: {
+                      duration: 2.5,
+                      ease: "easeOut"
+                    }
+                  }
+                }}
+              >
+                <div className="relative w-[60vmin] aspect-[759/600]">
+                  <Image
+                    src={`/grave_${index + 1}.png`}
+                    alt={`Grave ${index + 1}`}
+                    layout="fill"
+                    objectFit="contain"
+                    style={{ transform: 'scale(1.3)' }}
+                    className="cursor-pointer"
+                  />
+                </div>
+              </motion.div>
+            );
+          })}
+        </motion.div>
+
+        {/* Cyber Glitch Text */}
+        <motion.div
+          style={{ opacity: glitchTextOpacity }}
+          className="absolute inset-0 z-[60] flex flex-col items-center justify-center"
+        >
+          <div className="text-center" style={{ pointerEvents: 'auto' }}>
+            <div className="font-mono text-2xl md:text-4xl font-thin text-white mb-8 leading-relaxed">
+              You don't know what you've given<br />
+              but they already know what to take
             </div>
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
       </div>
 
       {/* Error Popup - moved to top level */}
@@ -669,6 +596,28 @@ export default function ParallaxSection() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Final Start Over Button - Separate Layer */}
+      {finalProgress > 0.98 && (
+        <motion.button
+          className="fixed z-[80] text-white font-mono text-sm hover:text-gray-300 transition-colors duration-300"
+          style={{ 
+            bottom: '40%', 
+            left: '50%', 
+            transform: 'translateX(-50%)',
+            color: '#33FF00',
+            animation: 'pulse 2s ease-in-out infinite',
+            cursor: 'pointer'
+          }}
+          onClick={() => {
+            console.log('Start over button clicked!');
+            window.scrollTo(0, 0);
+            window.location.reload();
+          }}
+        >
+          ▴ start over
+        </motion.button>
+      )}
     </div>
   );
 } 
