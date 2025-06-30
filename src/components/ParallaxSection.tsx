@@ -408,7 +408,10 @@ export default function ParallaxSection() {
               >
                 <div className="relative w-[60vmin] aspect-[759/600]">
                   <motion.div
-                    style={{ opacity: useTransform(snackImageTransition, [0, 0.5], [1, 0]) }}
+                    style={{ 
+                      opacity: useTransform(snackImageTransition, [0, 0.5], [1, 0]),
+                      pointerEvents: 'auto', // 항상 클릭 가능
+                    }}
                     className="absolute inset-0 z-[100] cursor-pointer"
                   >
                     <Image
@@ -421,7 +424,10 @@ export default function ParallaxSection() {
                     />
                   </motion.div>
                   <motion.div
-                    style={{ opacity: useTransform(snackImageTransition, [0.5, 1], [0, 1]) }}
+                    style={{ 
+                      opacity: useTransform(snackImageTransition, [0.5, 1], [0, 1]),
+                      pointerEvents: useTransform(snackImageTransition, [0.5, 0.51], ['none', 'auto'])
+                    }}
                     className="absolute inset-0"
                   >
                     <Image
