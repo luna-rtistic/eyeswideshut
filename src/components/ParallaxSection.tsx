@@ -207,7 +207,7 @@ export default function ParallaxSection() {
   const color1Opacity = useTransform(finalSequenceProgress, [0.44, 0.46, 0.55, 0.56], [0, 1, 1, 0]);
   const color2Opacity = useTransform(finalSequenceProgress, [0.46, 0.48, 0.55, 0.56], [0, 1, 1, 0]);
   const color3Opacity = useTransform(finalSequenceProgress, [0.48, 0.50, 0.55, 0.56], [0, 1, 1, 0]);
-  const color4Opacity = useTransform(finalSequenceProgress, [0.50, 0.52, 0.55, 0.56], [0, 1, 1, 0]);
+  const color4Opacity = useTransform(finalSequenceProgress, [0.50, 0.52, 0.55, 0.78, 0.83], [0, 1, 1, 1, 0]);
   
   // Color 4 splits into 6 pieces
   const color4SplitProgress = useTransform(finalSequenceProgress, [0.52, 0.54, 0.56, 0.58], [0, 1, 1, 0]);
@@ -217,7 +217,7 @@ export default function ParallaxSection() {
   const gridContainerOpacity = useTransform(finalSequenceProgress, [0.54, 0.56, 0.88, 0.90], [0, 1, 1, 0]);
   const gridProgress = useTransform(finalSequenceProgress, [0.56, 0.60], [0.1, 0.9]);
   
-  const saturation = useTransform(finalSequenceProgress, [0.74, 0.75, 0.77, 0.773], [1, 1, 0, 0]);
+  const saturation = useTransform(scrollYProgress, [0.78, 0.83], [1, 0]);
   const filter = useTransform(saturation, (s) => `saturate(${s})`);
 
   const snack1Opacity = useTransform(finalSequenceProgress, [0.65, 0.69, 0.73, 0.75], [0, 1, 1, 0]);
@@ -225,7 +225,6 @@ export default function ParallaxSection() {
   const snack2Opacity = useTransform(finalSequenceProgress, [0.75, 0.76, 0.78, 0.79], [0, 1, 1, 0]);
   const snack2PointerEvents = useTransform(snack2Opacity, (v) => (v === 0 ? 'none' : 'auto'));
 
-  const textContainerOpacity = useTransform(finalSequenceProgress, [0.74, 0.773, 0.78], [0, 1, 0]);
   const textTypingProgress = useTransform(finalSequenceProgress, [0.75, 0.77], [0, 1]);
 
   // Error popup appears and disappears
@@ -252,6 +251,9 @@ export default function ParallaxSection() {
     const unsubscribe = finalSequenceProgress.on("change", setFinalProgress);
     return () => unsubscribe();
   }, [finalSequenceProgress]);
+
+  // Start from far left (off-screen) and move to far right (off-screen)
+  const textX = useTransform(scrollYProgress, [0.78, 0.83], ['-100vw', '100vw']);
 
   return (
     <div ref={parallaxContainerRef} className="relative h-[5000vh]">
@@ -338,21 +340,27 @@ export default function ParallaxSection() {
 
         <motion.div 
           className="absolute inset-0 z-20"
-          style={{ filter }}
         >
           <MandalaVideo opacity={mandalaOpacity} bgScale={mandalaBgScale} />
           <div className="absolute inset-0 z-30 pointer-events-none">
             <ColorImage opacity={color1Opacity} src="/color_1.png" />
             <ColorImage opacity={color2Opacity} src="/color_2.png" />
             <ColorImage opacity={color3Opacity} src="/color_3.png" />
-            <ColorImage opacity={color4Opacity} src="/color_4.png" />
+            <ColorImage opacity={color4Opacity} src="/color_4.png" filter={filter} />
           </div>
 
-          <motion.div 
-            style={{ opacity: textContainerOpacity }}
-            className="z-30 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+          <motion.div
+            style={{ x: textX, top: '50%', position: 'absolute', translateY: '-50%', left: 0, opacity: 1, pointerEvents: 'none' }}
+            className="z-30"
           >
-            <p className="font-mono text-green-500 text-center text-2xl">
+            <p
+              className="font-mono text-center text-2xl font-bold"
+              style={{
+                color: '#00FF00',
+                textShadow: '0 0 24px #00FF00, 0 0 48px #00FF00',
+                opacity: 1,
+              }}
+            >
               {characters.map((char, i) => {
                 const start = i / characters.length;
                 const end = start + 1 / characters.length;
@@ -401,15 +409,14 @@ export default function ParallaxSection() {
                 <div className="relative w-[60vmin] aspect-[759/600]">
                   <motion.div
                     style={{ opacity: useTransform(snackImageTransition, [0, 0.5], [1, 0]) }}
-                    className="absolute inset-0"
+                    className="absolute inset-0 z-[100] cursor-pointer"
                   >
                     <Image
                       src={`/snack_${index + 1}-1.png`}
                       alt={`Snack ${index + 1} version 1`}
-                      layout="fill"
-                      objectFit="contain"
-                      style={{ transform: 'scale(1.3)' }}
-                      onClick={() => setSelectedSnackImage(`/snack_${index + 1}-1.png`)}
+                      fill
+                      style={{ objectFit: 'contain', transform: 'scale(1.3)' }}
+                      onClick={() => setSelectedImage(`/snack_${index + 1}-1.png`)}
                       className="cursor-pointer"
                     />
                   </motion.div>
@@ -420,9 +427,8 @@ export default function ParallaxSection() {
                     <Image
                       src={`/snack_${index + 1}-2.png`}
                       alt={`Snack ${index + 1} version 2`}
-                      layout="fill"
-                      objectFit="contain"
-                      style={{ transform: 'scale(1.3)' }}
+                      fill
+                      style={{ objectFit: 'contain', transform: 'scale(1.0)' }}
                       onClick={() => setSelectedSnackImage(`/snack_${index + 1}-2.png`)}
                       className="cursor-pointer"
                     />
@@ -473,9 +479,8 @@ export default function ParallaxSection() {
                   <Image
                     src={`/grave_${index + 1}.png`}
                     alt={`Grave ${index + 1}`}
-                    layout="fill"
-                    objectFit="contain"
-                    style={{ transform: 'scale(1.3)' }}
+                    fill
+                    style={{ objectFit: 'contain', transform: 'scale(1.3)' }}
                     className="cursor-pointer"
                   />
                 </div>
@@ -567,8 +572,8 @@ export default function ParallaxSection() {
                 <Image
                   src={selectedImage}
                   alt="Enlarged snack image"
-                  layout="fill"
-                  objectFit="contain"
+                  fill
+                  style={{ objectFit: 'contain' }}
                 />
               </motion.div>
               <motion.button
@@ -607,8 +612,8 @@ export default function ParallaxSection() {
                 <Image
                   src={selectedSnackImage}
                   alt="Enlarged snack image"
-                  layout="fill"
-                  objectFit="contain"
+                  fill
+                  style={{ objectFit: 'contain' }}
                 />
               </motion.div>
               <motion.button
