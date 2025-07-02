@@ -1,49 +1,45 @@
 "use client";
 
 import styles from "./ErrorBurstBackground.module.css";
+import { useMemo, useEffect, useState } from "react";
 
-const NUM_IMAGES = 18;
-const BASE_LEFT = 120; // px, 시작 x 위치 (오른쪽으로 이동)
-const BASE_TOP = -40;  // px, 시작 y 위치 (더 위로 올림)
-const DELTA_X = 48;   // px, x축 이동량
-const DELTA_Y = 90;   // px, y축 이동량
+const NUM_IMAGES = 100;
 const IMG_WIDTH = 260;
 const IMG_HEIGHT = 180;
-const OVERLAP = 0.7; // 오버랩 비율 (1: 완전 분리, 0: 완전 겹침)
+const APPEAR_INTERVAL = 100; // ms, 0.1초 간격
 
-function getRandomOffset(range: number) {
-  return (Math.random() - 0.5) * range; // -range/2 ~ +range/2
+function getRandomInRange(min: number, max: number) {
+  return Math.random() * (max - min) + min;
 }
 
 export default function ErrorBurstBackground() {
-  const images = Array.from({ length: NUM_IMAGES }).map((_, i) => {
-    const left = BASE_LEFT + i * DELTA_X * OVERLAP + getRandomOffset(28);
-    const top = BASE_TOP + i * DELTA_Y * OVERLAP + getRandomOffset(36);
-    const opacity = 0.85 - i * 0.015; // 아래로 갈수록 살짝 투명
-    const zIndex = 10 + i; // 위로 갈수록 위에 쌓임
-    return (
-      <img
-        key={i}
-        src="/computer.jpg"
-        alt="computer"
-        width={IMG_WIDTH}
-        height={IMG_HEIGHT}
-        style={{
-          position: "fixed",
-          left: `${left}px`,
-          top: `${top}px`,
-          opacity,
-          zIndex,
-          pointerEvents: "none",
-          userSelect: "none",
-          objectFit: "cover",
-          display: "block",
-          boxShadow: i === 0 ? "0 8px 32px rgba(0,0,0,0.2)" : undefined,
-        }}
-        draggable={false}
-      />
-    );
-  });
+  const screenWidth = typeof window !== "undefined" ? window.innerWidth : 1920;
+  const screenHeight = typeof window !== "undefined" ? window.innerHeight : 1080;
+
+  // useMemo로 한 번만 생성 (랜덤 위치 고정, rotate 없음)
+  const imagesData = useMemo(() => Array.from({ length: NUM_IMAGES }).map((_, i) => {
+    const left = getRandomInRange(0, screenWidth - IMG_WIDTH);
+    const top = getRandomInRange(0, screenHeight - IMG_HEIGHT);
+    const opacity = 0.7 + Math.random() * 0.25;
+    const zIndex = 10 + i;
+    return { left, top, opacity, zIndex };
+  }), [screenWidth, screenHeight]);
+
+  // 등장 이미지 개수 state
+  const [visibleCount, setVisibleCount] = useState(0);
+  useEffect(() => {
+    setVisibleCount(0);
+    let i = 0;
+    const interval = setInterval(() => {
+      i++;
+      setVisibleCount((prev) => {
+        if (prev < NUM_IMAGES) return prev + 1;
+        return prev;
+      });
+      if (i >= NUM_IMAGES) clearInterval(interval);
+    }, APPEAR_INTERVAL);
+    return () => clearInterval(interval);
+  }, [screenWidth, screenHeight]);
 
   return (
     <div
@@ -55,7 +51,27 @@ export default function ErrorBurstBackground() {
         pointerEvents: "none",
       }}
     >
-      {images}
+      {imagesData.slice(0, visibleCount).map((img, i) => (
+        <img
+          key={i}
+          src="/computer.jpg"
+          alt="computer"
+          width={IMG_WIDTH}
+          height={IMG_HEIGHT}
+          style={{
+            position: "fixed",
+            left: `${img.left}px`,
+            top: `${img.top}px`,
+            opacity: img.opacity,
+            zIndex: img.zIndex,
+            pointerEvents: "none",
+            userSelect: "none",
+            objectFit: "cover",
+            display: "block",
+          }}
+          draggable={false}
+        />
+      ))}
     </div>
   );
 } 

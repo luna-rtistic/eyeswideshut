@@ -228,8 +228,10 @@ export default function ParallaxSection() {
 
   const textTypingProgress = useTransform(finalSequenceProgress, [0.75, 0.77], [0, 1]);
 
-  // Error popup appears and disappears
-  const errorPopupOpacity = useTransform(finalSequenceProgress, [0.82, 0.84, 0.86, 0.88], [0, 1, 1, 0]);
+  // Error popup appears and disappears instantly
+  const errorPopupOpacity = useTransform(finalSequenceProgress, (value) => {
+    return value >= 0.83 && value < 0.87 ? 1 : 0;
+  });
 
   // Snack images appear after popup disappears and grid starts to disappear
   const snackImagesOpacity = useTransform(finalSequenceProgress, [0.88, 0.90, 0.95, 0.96], [0, 1, 1, 0]);
