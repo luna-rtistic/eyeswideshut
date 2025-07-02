@@ -8,6 +8,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import ScrollVideoBackground from "@/components/ScrollVideoBackground";
 import { MotionValue } from "framer-motion";
+import ErrorBurstBackground from "@/components/ErrorBurstBackground";
 
 const MandalaVideo = dynamic(() => import("./MandalaVideo"), { ssr: false });
 const ChatLog = dynamic(() => import("./ChatLog"), { ssr: false });
@@ -255,8 +256,20 @@ export default function ParallaxSection() {
   // Start from far left (off-screen) and move to far right (off-screen)
   const textX = useTransform(scrollYProgress, [0.78, 0.83], ['-100vw', '100vw']);
 
+  // errorPopupOpacity를 React state로 동기화 (콘솔 로그 추가)
+  const [showErrorBackground, setShowErrorBackground] = useState(false);
+  useEffect(() => {
+    const unsubscribe = errorPopupOpacity.on("change", (v) => {
+      setShowErrorBackground(v > 0.01);
+      console.log("errorPopupOpacity changed:", v, "showErrorBackground:", v > 0.01);
+    });
+    return () => unsubscribe();
+  }, [errorPopupOpacity]);
+
   return (
     <div ref={parallaxContainerRef} className="relative h-[5000vh]">
+      {/* System Error 모달이 등장할 때만 이미지 배경 등장 */}
+      {showErrorBackground && <ErrorBurstBackground />}
       {/* 비디오 배경 */}
       <ScrollVideoBackground
         progress={rectangleProgress.get()}
